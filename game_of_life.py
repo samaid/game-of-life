@@ -5,7 +5,9 @@ import argparse
 parser = argparse.ArgumentParser(description="Conway's Game of Life")
 parser.add_argument("--variant", help="Implementation variant. Can be either NumPy or Numba", default="Numba")
 parser.add_argument("--threading-layer", help="Threading layer. Can be either omp, tbb, or workqueue", default="omp")
-parser.add_argument("--parallel", help="Keyword argument parallel= for @njit. Can be True or False. Used along with --variant Numba", type=bool, default=False)
+parser.add_argument("--parallel",
+                    help="Keyword argument parallel= for @njit. Can be True or False. Used along with --variant Numba",
+                    type=bool, default=False)
 args = parser.parse_args()
 
 RUN_VERSION = args.variant
@@ -27,7 +29,7 @@ if RUN_VERSION == "Numba":
     def _init_grid(w, h, p):
         return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
 
-    @njit(["int32[:,:](int32[:,:])"], parallel=args.parallel)
+    @njit(["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=args.parallel)
     def _grid_update(grid):
         m, n = grid.shape
         grid_out = np.empty_like(grid)
@@ -139,8 +141,6 @@ def main():
     print("Average FPS =", frames/(t2-t1))
     pg.quit()
     #_grid_update.parallel_diagnostics(level=4)
-
-
 
 
 if __name__ == "__main__":
