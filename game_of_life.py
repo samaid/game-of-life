@@ -12,8 +12,6 @@ args = parser.parse_args()
 
 RUN_VERSION = args.variant
 
-IMG_MONSTER = None
-
 if RUN_VERSION == "Numba":
     import numpy as np
     from numba import njit, prange, config
@@ -92,16 +90,10 @@ class Grid:
         self.grid = _init_grid(w, h, p)
 
     def draw(self, sc):
-        sc.fill(pg.Color('black'))
-
-        y = 0
-        for i in range(self.h):
-            x = 0
-            for j in range(self.w):
-                if self.grid[i, j]:
-                    sc.blit(IMG_MONSTER, (x, y))
-                x += CELL_SIZE
-            y += CELL_SIZE
+        img = np.zeros(shape=self.grid.shape + (3,), dtype=np.uint8)
+        img[:, :, 1] = 255 * self.grid
+        surf = pg.surfarray.make_surface(img.transpose((1, 0, 2)))
+        pg.transform.scale(surf, sc.get_size(), sc)
 
     def update(self):
         self.grid = _grid_update(self.grid)
@@ -109,11 +101,6 @@ class Grid:
 
 def main():
     ds, clk = initialize()
-    global IMG_MONSTER
-
-    IMG_MONSTER = pg.image.load("monster.png").convert()
-    IMG_MONSTER.set_colorkey("white")
-    IMG_MONSTER = pg.transform.scale(IMG_MONSTER, (CELL_SIZE, CELL_SIZE))
 
     grid = Grid(GRID_W, GRID_H, PROB_ON)
 
@@ -140,7 +127,6 @@ def main():
     t2 = time()
     print("Average FPS =", frames/(t2-t1))
     pg.quit()
-    #_grid_update.parallel_diagnostics(level=4)
 
 
 if __name__ == "__main__":
