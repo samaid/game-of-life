@@ -22,8 +22,6 @@ args = parser.parse_args()
 
 RUN_VERSION = args.variant
 
-IMG_MONSTER = None
-
 if args.gui:
     import cv2
 
@@ -42,7 +40,7 @@ if RUN_VERSION == "Numba".casefold():
     def _init_grid(w, h, p):
         return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
 
-    @njit(["int64[:,:](int64[:,:])"], parallel=args.parallel)
+    @njit(["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=args.parallel)
     def _grid_update(grid):
         m, n = grid.shape
         grid_out = np.empty_like(grid)
@@ -248,8 +246,6 @@ def main():
         print(f"    Total       {1/total_tpf:4.1f}")
 
     #_grid_update.parallel_diagnostics(level=4)
-
-
 
 
 if __name__ == "__main__":
