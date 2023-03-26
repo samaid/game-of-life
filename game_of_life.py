@@ -1,18 +1,20 @@
-from init import *
+from init import RUN_VERSION, DISPLAY_H, DISPLAY_W, WINDOW_NAME, ESC_KEYCODE
+from init import PROB_ON
+from init import args, time_meter
 
 if args.gui:
     import cv2
 
 if RUN_VERSION == "Numba".casefold():
+    import numpy as np
     from numba import config
 
-    from impl_numba import *
+    from impl_numba import init_grid, grid_update
 
     config.THREADING_LAYER = args.threading_layer
-
-
-if RUN_VERSION == "NumPy".casefold():
-    from impl_numpy import *
+elif RUN_VERSION == "NumPy".casefold():
+    import numpy as np
+    from impl_numpy import init_grid, grid_update
 
 
 class Grid:
@@ -51,7 +53,6 @@ class Grid:
         )
 
     def statistics_line(self, img, name, line, fps, time):
-        y_pos = self.y_pos_from_line(line)
         # no monospace fonts in OpenCV
         self.putText(img, name, line)
         self.putText(img, "FPS|time(ms)", line, 150)

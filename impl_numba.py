@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit, prange
 
-from init import *
+from init import args
 
 rules = np.array(
     [
