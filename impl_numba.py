@@ -2,11 +2,13 @@ from init import *
 import numpy as np
 from numba import njit, prange
 
-rules = np.array([
-    # 0  1  2  3  4  5  6  7  8   # Number of alive cell neighbors
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],  # Rule for dead cells
-    [0, 0, 1, 1, 0, 0, 0, 0, 0],  # Rule for alive cells
-])
+rules = np.array(
+    [
+        # 0  1  2  3  4  5  6  7  8   # Number of alive cell neighbors
+        [0, 0, 0, 1, 0, 0, 0, 0, 0],  # Rule for dead cells
+        [0, 0, 1, 1, 0, 0, 0, 0, 0],  # Rule for alive cells
+    ]
+)
 
 
 def init_grid(w, h, p):
@@ -30,6 +32,6 @@ def grid_update(grid):
     for i in prange(m):
         for j in range(n):
             v_self = grid[i, j]
-            neighbor_population = grid_padded[i:i + 3, j:j + 3].sum() - v_self
+            neighbor_population = grid_padded[i : i + 3, j : j + 3].sum() - v_self
             grid_out[i, j] = rules[v_self, neighbor_population]
     return grid_out

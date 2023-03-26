@@ -24,7 +24,7 @@ class Grid:
     if args.gui:
         font = cv2.FONT_HERSHEY_TRIPLEX
     font_scale = 0.5
-    font_color = (255,255,255) # BGR(A)
+    font_color = (255, 255, 255)  # BGR(A)
     font_height = 15
     text_y_initial_pos = 25
     text_x_initial_pos = 10
@@ -32,15 +32,22 @@ class Grid:
     def __init__(self, w, h, p):
         self.w = w
         self.h = h
-        self.time = {self.draw_last: 0, self.draw_total: 0, self.update_last: 0, self.update_total: 0}
+        self.time = {
+            self.draw_last: 0,
+            self.draw_total: 0,
+            self.update_last: 0,
+            self.update_total: 0,
+        }
         self.grid = init_grid(w, h, p)
 
     def y_pos_from_line(self, line):
-        return self.text_y_initial_pos + self.font_height*line
+        return self.text_y_initial_pos + self.font_height * line
 
-    def putText(self, img, text, line, x_pos = text_x_initial_pos):
+    def putText(self, img, text, line, x_pos=text_x_initial_pos):
         y_pos = self.y_pos_from_line(line)
-        cv2.putText(img, text, (x_pos, y_pos), self.font, self.font_scale, self.font_color, 2)
+        cv2.putText(
+            img, text, (x_pos, y_pos), self.font, self.font_scale, self.font_color, 2
+        )
 
     def statistics_line(self, img, name, line, fps, time):
         y_pos = self.y_pos_from_line(line)
@@ -53,35 +60,44 @@ class Grid:
         if RUN_VERSION == "Numba".casefold():
             return f"Numba, threading layer: {args.threading_layer}, parallel: {args.parallel}"
         else:
-            return 'NumPy'
+            return "NumPy"
 
     def task_size_string(self):
         return f"Task size {self.w}x{self.h}"
 
     def get_statistics(self, frame_count):
         update_time = self.time[self.update_last]
-        update_tpf = self.time[self.update_total]/frame_count
+        update_tpf = self.time[self.update_total] / frame_count
         draw_time = self.time[self.draw_last]
-        draw_tpf = self.time[self.draw_total]/frame_count
+        draw_tpf = self.time[self.draw_total] / frame_count
         total_time = update_time + draw_time
         total_tpf = update_tpf + draw_tpf
 
         return update_time, update_tpf, draw_time, draw_tpf, total_time, total_tpf
 
     def draw_statistics(self, img, frame_count):
-        update_time, update_tpf, draw_time, draw_tpf, total_time, total_tpf = self.get_statistics(frame_count)
+        (
+            update_time,
+            update_tpf,
+            draw_time,
+            draw_tpf,
+            total_time,
+            total_tpf,
+        ) = self.get_statistics(frame_count)
 
         p1 = (5, 7)
         p2 = (420, 110)
-        sub_img = img[p1[1]:p2[1], p1[0]:p2[0]]
+        sub_img = img[p1[1] : p2[1], p1[0] : p2[0]]
         black_bg = np.zeros(sub_img.shape, dtype=np.uint8)
-        img[p1[1]:p2[1], p1[0]:p2[0]] = cv2.addWeighted(sub_img, 0.5, black_bg, 0.5, 1.0)
+        img[p1[1] : p2[1], p1[0] : p2[0]] = cv2.addWeighted(
+            sub_img, 0.5, black_bg, 0.5, 1.0
+        )
         self.putText(img, self.implemetation_string(), 0)
         self.putText(img, self.task_size_string(), 1)
         self.putText(img, f"Frames: {(frame_count//10)*10}", 2)
-        self.statistics_line(img, "Computation", 3, 1/update_tpf, update_time)
-        self.statistics_line(img, "Draw", 4, 1/draw_tpf, draw_time)
-        self.statistics_line(img, "Total", 5, 1/total_tpf, total_time)
+        self.statistics_line(img, "Computation", 3, 1 / update_tpf, update_time)
+        self.statistics_line(img, "Draw", 4, 1 / draw_tpf, draw_time)
+        self.statistics_line(img, "Total", 5, 1 / total_tpf, total_time)
 
     @time_meter(draw_last, draw_total)
     def draw(self, window_name, show_statistics, frame_count):
@@ -90,8 +106,8 @@ class Grid:
             return False
 
         img = np.zeros(shape=self.grid.shape + (3,), dtype=np.uint8)
-        img[:,:,1] = 255*self.grid
-        img = cv2.resize(img,  (DISPLAY_W, DISPLAY_H), interpolation=cv2.INTER_NEAREST)
+        img[:, :, 1] = 255 * self.grid
+        img = cv2.resize(img, (DISPLAY_W, DISPLAY_H), interpolation=cv2.INTER_NEAREST)
 
         if show_statistics and frame_count > 0:
             self.draw_statistics(img, frame_count)
@@ -153,7 +169,7 @@ def main():
         print(f"    Draw        {1/draw_tpf:4.1f}")
         print(f"    Total       {1/total_tpf:4.1f}")
 
-    #_grid_update.parallel_diagnostics(level=4)
+    # _grid_update.parallel_diagnostics(level=4)
 
 
 if __name__ == "__main__":
