@@ -1,0 +1,4 @@
+
+*.pyc
+__pycache__/settings.cpython-39.pyc
+.idea/workspace.xml

@@ -1,117 +1,17 @@
-from settings import *
-from time import time
-import argparse
-
-
-ESC_KEYCODE = 27
-WINDOW_NAME = 'Game of life'
-
-
-def int_tuple(input):
-    return tuple(map(int, input.split(',')))
-
-
-parser = argparse.ArgumentParser(description="Conway's Game of Life")
-parser.add_argument("--variant", help="Implementation variant. Can be either NumPy or Numba", type=str.casefold, choices=["numba", "numpy"], default="Numba")
-parser.add_argument("--threading-layer", help="Threading layer. Can be either omp, tbb, or workqueue", default="omp")
-parser.add_argument('--parallel', help="Keyword argument parallel= for @njit. Used along with --variant Numba", action=argparse.BooleanOptionalAction, default=False)
-parser.add_argument('--frames-count', help="Stop game after specified amount of frames", type=int, default=0)
-parser.add_argument('--gui', help="Either draw result or do only calculations", action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument('--stats', help="Either display statistics in gui while running or not.", action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument('--task-size', help="Size of the grid. E.g. 1200,800", type=int_tuple, default=int_tuple(f"{GRID_W},{GRID_H}"))
-
-args = parser.parse_args()
-
-RUN_VERSION = args.variant
+from init import *
 
 if args.gui:
     import cv2
 
 if RUN_VERSION == "Numba".casefold():
-    import numpy as np
-    from numba import njit, prange, config
+    from impl_numba import *
+    from numba import config
 
     config.THREADING_LAYER = args.threading_layer
 
-    rules = np.array([
-        # 0  1  2  3  4  5  6  7  8   # Number of alive cell neighbors
-        [0, 0, 0, 1, 0, 0, 0, 0, 0],  # Rule for dead cells
-        [0, 0, 1, 1, 0, 0, 0, 0, 0],  # Rule for alive cells
-    ])
-
-    def _init_grid(w, h, p):
-        return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
-
-    @njit(["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=args.parallel)
-    def _grid_update(grid):
-        m, n = grid.shape
-        grid_out = np.empty_like(grid)
-        grid_padded = np.empty((m+2, n+2), dtype=grid.dtype)
-        grid_padded[1:-1, 1:-1] = grid  # copy input grid into the center of padded one
-        grid_padded[0, 1:-1] = grid[-1]  # top row of padded grid
-        grid_padded[-1, 1:-1] = grid[0]  # bottom
-        grid_padded[1:-1, 0] = grid[:, -1]
-        grid_padded[1:-1, -1] = grid[:, 0]
-        grid_padded[0, 0] = grid[-1, -1]
-        grid_padded[-1, -1] = grid[0, 0]
-        grid_padded[0, -1] = grid[-1, 0]
-        grid_padded[-1, 0] = grid[0, -1]
-        for i in prange(m):
-            for j in range(n):
-                v_self = grid[i, j]
-                neighbor_population = grid_padded[i:i+3, j:j+3].sum() - v_self
-                grid_out[i, j] = rules[v_self, neighbor_population]
-        return grid_out
-
 
 if RUN_VERSION == "NumPy".casefold():
-    import numpy as np
-
-    rules = np.array([
-        # 0  1  2  3  4  5  6  7  8   # Number of alive cell neighbors
-        [0, 0, 0, 1, 0, 0, 0, 0, 0],  # Rule for dead cells
-        [0, 0, 1, 1, 0, 0, 0, 0, 0],  # Rule for alive cells
-    ])
-
-    def _init_grid(w, h, p):
-        return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
-
-
-    def _grid_update(grid):
-        m, n = grid.shape
-        grid_out = np.empty_like(grid)
-        grid_padded = np.empty((m+2, n+2), dtype=grid.dtype)
-        grid_padded[1:-1, 1:-1] = grid  # copy input grid into the center of padded one
-        grid_padded[0, 1:-1] = grid[-1]  # top row of padded grid
-        grid_padded[-1, 1:-1] = grid[0]  # bottom
-        grid_padded[1:-1, 0] = grid[:, -1]
-        grid_padded[1:-1, -1] = grid[:, 0]
-        grid_padded[0, 0] = grid[-1, -1]
-        grid_padded[-1, -1] = grid[0, 0]
-        grid_padded[0, -1] = grid[-1, 0]
-        grid_padded[-1, 0] = grid[0, -1]
-        for i in range(m):
-            for j in range(n):
-                v_self = grid[i, j]
-                neighbor_population = grid_padded[i:i+3, j:j+3].sum() - v_self
-                grid_out[i, j] = rules[v_self, neighbor_population]
-        return grid_out
-
-
-def time_meter(last, total):
-    def _time_meter(func):
-        def impl(self, *args, **kwargs):
-            start = time()
-            res = func(self, *args, **kwargs)
-            end = time()
-            self.time[last] = end - start
-            self.time[total] += end - start
-
-            return res
-
-        return impl
-
-    return _time_meter
+    from impl_numpy import *
 
 
 class Grid:
@@ -133,7 +33,7 @@ class Grid:
         self.w = w
         self.h = h
         self.time = {self.draw_last: 0, self.draw_total: 0, self.update_last: 0, self.update_total: 0}
-        self.grid = _init_grid(w, h, p)
+        self.grid = init_grid(w, h, p)
 
     def y_pos_from_line(self, line):
         return self.text_y_initial_pos + self.font_height*line
@@ -207,7 +107,7 @@ class Grid:
 
     @time_meter(update_last, update_total)
     def update(self):
-        self.grid = _grid_update(self.grid)
+        self.grid = grid_update(self.grid)
 
 
 def main():
