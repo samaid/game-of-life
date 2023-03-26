@@ -30,11 +30,12 @@ For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Con
 
 Running demo
 ************
+From command line type:
 `python game_of_life.py  [command line options]`
 
-`--variant [numba, numpy]`, default `numba` - implementation variant
-`--threading-layer [omp, tbb, workqueue]`, default `omp` - threading layer for `numba` implementation
-`--parallel` or `--no-parallel` - keyword argument `parallel=` for `@njit`. Used along with `--variant numba`
+* `--variant [numba, numpy]`, default `numba` - implementation variant
+* `--threading-layer [omp, tbb, workqueue]`, default `omp` - threading layer for `numba` implementation
+* `--parallel` or `--no-parallel` - keyword argument `parallel=` for `@njit`. Used along with `--variant numba`
 parser.add_argument('--frames-count', help="Stop game after specified amount of frames", type=int, default=0)
 parser.add_argument('--gui', help="Render the evolution of the grid or do computation only and "
                                   "print statistics in the end", action=argparse.BooleanOptionalAction, default=True)
