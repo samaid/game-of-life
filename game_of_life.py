@@ -6,8 +6,10 @@ import argparse
 ESC_KEYCODE = 27
 WINDOW_NAME = 'Game of life'
 
+
 def int_tuple(input):
     return tuple(map(int, input.split(',')))
+
 
 parser = argparse.ArgumentParser(description="Conway's Game of Life")
 parser.add_argument("--variant", help="Implementation variant. Can be either NumPy or Numba", type=str.casefold, choices=["numba", "numpy"], default="Numba")
@@ -95,6 +97,23 @@ if RUN_VERSION == "NumPy".casefold():
                 grid_out[i, j] = rules[v_self, neighbor_population]
         return grid_out
 
+
+def time_meter(last, total):
+    def _time_meter(func):
+        def impl(self, *args, **kwargs):
+            start = time()
+            res = func(self, *args, **kwargs)
+            end = time()
+            self.time[last] = end - start
+            self.time[total] += end - start
+
+            return res
+
+        return impl
+
+    return _time_meter
+
+
 class Grid:
     draw_last = "draw_time_last"
     draw_total = "draw_time_total"
@@ -104,9 +123,9 @@ class Grid:
 
     if args.gui:
         font = cv2.FONT_HERSHEY_TRIPLEX
-    font_scale = 1
-    font_color = (0,0,255) # BGR(A)
-    font_height = 30
+    font_scale = 0.5
+    font_color = (255,255,255) # BGR(A)
+    font_height = 15
     text_y_initial_pos = 25
     text_x_initial_pos = 10
 
@@ -116,35 +135,19 @@ class Grid:
         self.time = {self.draw_last: 0, self.draw_total: 0, self.update_last: 0, self.update_total: 0}
         self.grid = _init_grid(w, h, p)
 
-    @staticmethod
-    def time_meter(last, total):
-        def _time_meter(func):
-            def impl(self, *args, **kwargs):
-                start = time()
-                res = func(self, *args, **kwargs)
-                end = time()
-                self.time[last] = end - start
-                self.time[total] += end - start
-
-                return res
-
-            return impl
-
-        return _time_meter
-
     def y_pos_from_line(self, line):
         return self.text_y_initial_pos + self.font_height*line
 
     def putText(self, img, text, line, x_pos = text_x_initial_pos):
         y_pos = self.y_pos_from_line(line)
-        cv2.putText(img, text, (x_pos, y_pos), self.font, self.font_scale, self.font_color)
+        cv2.putText(img, text, (x_pos, y_pos), self.font, self.font_scale, self.font_color, 2)
 
     def statistics_line(self, img, name, line, fps, time):
         y_pos = self.y_pos_from_line(line)
         # no monospace fonts in OpenCV
         self.putText(img, name, line)
-        self.putText(img, "FPS|time(ms)", line, 250)
-        self.putText(img, f"{fps:4.1f}|{int(1000*time)}", line, 500)
+        self.putText(img, "FPS|time(ms)", line, 150)
+        self.putText(img, f"{fps:4.1f}|{int(1000*time)}", line, 300)
 
     def implemetation_string(self):
         if RUN_VERSION == "Numba".casefold():
@@ -168,6 +171,11 @@ class Grid:
     def draw_statistics(self, img, frame_count):
         update_time, update_tpf, draw_time, draw_tpf, total_time, total_tpf = self.get_statistics(frame_count)
 
+        p1 = (5, 7)
+        p2 = (420, 110)
+        sub_img = img[p1[1]:p2[1], p1[0]:p2[0]]
+        black_bg = np.zeros(sub_img.shape, dtype=np.uint8)
+        img[p1[1]:p2[1], p1[0]:p2[0]] = cv2.addWeighted(sub_img, 0.5, black_bg, 0.5, 1.0)
         self.putText(img, self.implemetation_string(), 0)
         self.putText(img, self.task_size_string(), 1)
         self.putText(img, f"Frames: {(frame_count//10)*10}", 2)
