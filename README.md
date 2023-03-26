@@ -27,3 +27,19 @@ live or dead; births and deaths occur simultaneously, and the discrete moment at
 Each generation is a pure function of the preceding one. The rules continue to be applied repeatedly to create further generations.
 
 For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
+
+Running demo
+************
+`python game_of_life.py  [command line options]`
+
+`--variant [numba, numpy]`, default `numba` - implementation variant
+`--threading-layer [omp, tbb, workqueue]`, default `omp` - threading layer for `numba` implementation
+parser.add_argument('--parallel', help="Keyword argument parallel= for @njit. Used along with --variant numba",
+                    action=argparse.BooleanOptionalAction, default=False)
+parser.add_argument('--frames-count', help="Stop game after specified amount of frames", type=int, default=0)
+parser.add_argument('--gui', help="Render the evolution of the grid or do computation only and "
+                                  "print statistics in the end", action=argparse.BooleanOptionalAction, default=True)
+parser.add_argument('--stats', help="Either display statistics in gui while running or not.",
+                    action=argparse.BooleanOptionalAction, default=True)
+parser.add_argument('--task-size', help="Size of the grid. E.g. 1200,800",
+                    type=int_tuple, default=int_tuple(f"{GRID_W},{GRID_H}"))
