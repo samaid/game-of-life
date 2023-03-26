@@ -1,6 +1,5 @@
-from time import time
 import argparse
-
+from time import time
 
 DISPLAY_RES = DISPLAY_W, DISPLAY_H = 1200, 800
 CELL_COLOR = (0, 255, 0)

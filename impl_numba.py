@@ -1,6 +1,7 @@
-from init import *
 import numpy as np
 from numba import njit, prange
+
+from init import *
 
 rules = np.array(
     [

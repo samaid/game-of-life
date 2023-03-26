@@ -4,8 +4,9 @@ if args.gui:
     import cv2
 
 if RUN_VERSION == "Numba".casefold():
-    from impl_numba import *
     from numba import config
+
+    from impl_numba import *
 
     config.THREADING_LAYER = args.threading_layer
 
