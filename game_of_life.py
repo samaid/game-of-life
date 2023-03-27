@@ -1,18 +1,28 @@
-from init import *
+from init import (
+    DISPLAY_H,
+    DISPLAY_W,
+    ESC_KEYCODE,
+    PROB_ON,
+    RUN_VERSION,
+    WINDOW_NAME,
+    args,
+    time_meter,
+)
 
 if args.gui:
     import cv2
 
 if RUN_VERSION == "Numba".casefold():
+    import numpy as np
     from numba import config
 
-    from impl_numba import *
+    from impl_numba import grid_update, init_grid
 
     config.THREADING_LAYER = args.threading_layer
+elif RUN_VERSION == "NumPy".casefold():
+    import numpy as np
 
-
-if RUN_VERSION == "NumPy".casefold():
-    from impl_numpy import *
+    from impl_numpy import grid_update, init_grid
 
 
 class Grid:
@@ -23,7 +33,7 @@ class Grid:
     update_total = "update_time_total"
 
     if args.gui:
-        font = cv2.FONT_HERSHEY_TRIPLEX
+        font = cv2.FONT_HERSHEY_TRIPLEX  # Select font
     font_scale = 0.5
     font_color = (255, 255, 255)  # BGR(A)
     font_height = 15
@@ -51,7 +61,6 @@ class Grid:
         )
 
     def statistics_line(self, img, name, line, fps, time):
-        y_pos = self.y_pos_from_line(line)
         # no monospace fonts in OpenCV
         self.putText(img, name, line)
         self.putText(img, "FPS|time(ms)", line, 150)
