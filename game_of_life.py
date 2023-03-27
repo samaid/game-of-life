@@ -1,6 +1,13 @@
-from init import RUN_VERSION, DISPLAY_H, DISPLAY_W, WINDOW_NAME, ESC_KEYCODE
-from init import PROB_ON
-from init import args, time_meter
+from init import (
+    DISPLAY_H,
+    DISPLAY_W,
+    ESC_KEYCODE,
+    PROB_ON,
+    RUN_VERSION,
+    WINDOW_NAME,
+    args,
+    time_meter,
+)
 
 if args.gui:
     import cv2
@@ -9,12 +16,13 @@ if RUN_VERSION == "Numba".casefold():
     import numpy as np
     from numba import config
 
-    from impl_numba import init_grid, grid_update
+    from impl_numba import grid_update, init_grid
 
     config.THREADING_LAYER = args.threading_layer
 elif RUN_VERSION == "NumPy".casefold():
     import numpy as np
-    from impl_numpy import init_grid, grid_update
+
+    from impl_numpy import grid_update, init_grid
 
 
 class Grid:
@@ -25,7 +33,7 @@ class Grid:
     update_total = "update_time_total"
 
     if args.gui:
-        font = cv2.FONT_HERSHEY_TRIPLEX
+        font = cv2.FONT_HERSHEY_TRIPLEX  # Select font
     font_scale = 0.5
     font_color = (255, 255, 255)  # BGR(A)
     font_height = 15
