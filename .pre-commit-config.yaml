@@ -15,7 +15,7 @@ repos:
     hooks:
     -   id: isort
         name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
+        args: ["--profile", "black", "--filter-files", "--multi-line", "7"]
 -   repo: https://github.com/pycqa/flake8
     rev: 3.9.2
     hooks:

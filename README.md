@@ -23,23 +23,26 @@ These rules, which compare the behaviour of the automaton to real life, can be c
 
 The initial pattern constitutes the seed of the system.
 The first generation is created by applying the above rules simultaneously to every cell in the seed,
-live or dead; births and deaths occur simultaneously, and the discrete moment at which this happens is sometimes called a tick.
-Each generation is a pure function of the preceding one. The rules continue to be applied repeatedly to create further generations.
+live or dead; births and deaths occur simultaneously, and the discrete moment at which this happens is
+sometimes called a tick.
+Each generation is a pure function of the preceding one.
+The rules continue to be applied repeatedly to create further generations.
 
 For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
 Running demo
-************
+------------
+
 From command line type:
 `python game_of_life.py  [command line options]`
 
 * `--variant [numba, numpy]`, default `numba` - implementation variant
 * `--threading-layer [omp, tbb, workqueue]`, default `omp` - threading layer for `numba` implementation
-* `--parallel` or `--no-parallel` - keyword argument `parallel=` for `@njit`. Used along with `--variant numba`
-parser.add_argument('--frames-count', help="Stop game after specified amount of frames", type=int, default=0)
-parser.add_argument('--gui', help="Render the evolution of the grid or do computation only and "
-                                  "print statistics in the end", action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument('--stats', help="Either display statistics in gui while running or not.",
-                    action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument('--task-size', help="Size of the grid. E.g. 1200,800",
-                    type=int_tuple, default=int_tuple(f"{GRID_W},{GRID_H}"))
+* `--parallel` (default) or `--no-parallel` - keyword argument `parallel=` for `@njit`.
+  Used along with `--variant numba`
+* `--frames-count` - stop rendering after a specified amount of frames. Default 0 meaning that the demo
+  does not stop until user action, e.g. close window
+* `--gui` (default) or `--no-gui` - render the evolution of the grid or do the computation only and
+  print performance statistics in the end.
+* `--stats` (default) or `--no-stats` - Display statistics in gui while running or not
+* `--task-size` - size of the grid WIDTH, HEIGHT. Example: 1200,800 (default)

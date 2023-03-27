@@ -1,16 +1,9 @@
-from init import (
-    DISPLAY_H,
-    DISPLAY_W,
-    ESC_KEYCODE,
-    PROB_ON,
-    RUN_VERSION,
-    WINDOW_NAME,
-    args,
-    time_meter,
-)
+from init import args, time_meter  # NOQA
 
 if args.gui:
     import cv2
+
+from init import PROB_ON, RUN_VERSION, args, time_meter  # NOQA
 
 if RUN_VERSION == "Numba".casefold():
     import numpy as np
@@ -23,6 +16,8 @@ elif RUN_VERSION == "NumPy".casefold():
     import numpy as np
 
     from impl_numpy import grid_update, init_grid
+
+from init import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME
 
 
 class Grid:
