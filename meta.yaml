@@ -1,13 +1,20 @@
-{% set version = "0.1.0" %}
-
 package:
   name: game-of-life-demo
-  version: {{version}}
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
-#  git_rev:
-  git_url: https://github.com/samaid/GameOfLife.git
-#  git_tag:
+  path: src
+
+build:
+  number: {{ GIT_DESCRIBE_NUMBER }}
+
+test:
+  requires:
+    pytest
+    pytest-cov
+
+  imports:
+    - game_of_life_demo
 
 requirements:
   build:
@@ -16,11 +23,9 @@ requirements:
 
   run:
     - python
-
-test:
-  imports:
-    - game_of_life_demo
+    - numba
+    - opencv
 
 about:
-  home: https://github.com/samaid/GameOfLife
-  license: BSD
+  home: https://github.com/samaid/game-of-life-demo
+  license: BSD-2
