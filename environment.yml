@@ -1,0 +1,15 @@
+name: game-of-life-demo
+channels:
+  - intel
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy<1.24
+  - numba-dpex
+  - matplotlib
+  - scipy
+  - dpnp
+  - dpctl
+  - tbb=2021.4
+  - opencv

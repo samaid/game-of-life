@@ -2,3 +2,7 @@
 *.pyc
 __pycache__/settings.cpython-39.pyc
 .idea/workspace.xml
+.idea/GameOfLife.iml
+.idea/inspectionProfiles/profiles_settings.xml
+*.iml
+*.xml
