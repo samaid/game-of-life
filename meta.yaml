@@ -1,0 +1,26 @@
+{% set version = "0.1.0" %}
+
+package:
+  name: game-of-life-demo
+  version: {{version}}
+
+source:
+#  git_rev:
+  git_url: https://github.com/samaid/GameOfLife.git
+#  git_tag:
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+
+test:
+  imports:
+    - game_of_life_demo
+
+about:
+  home: https://github.com/samaid/GameOfLife
+  license: BSD

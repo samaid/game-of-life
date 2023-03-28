@@ -7,9 +7,8 @@ from init import PROB_ON, RUN_VERSION, args, time_meter  # NOQA
 
 if RUN_VERSION == "Numba".casefold():
     import numpy as np
-    from numba import config
-
     from impl_numba import grid_update, init_grid
+    from numba import config
 
     config.THREADING_LAYER = args.threading_layer
 elif RUN_VERSION == "NumPy".casefold():
