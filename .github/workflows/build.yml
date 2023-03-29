@@ -53,6 +53,7 @@ jobs:
             $TEST \
             $VERSIONS \
             $CHANNELS \
+            conda-recipe
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -91,7 +92,7 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
       - name: Build conda package
-        run: conda build --no-test --python ${{ matrix.python }} -c intel -c main --override-channels
+        run: conda build --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
