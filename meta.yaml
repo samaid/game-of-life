@@ -10,16 +10,21 @@ build:
 
 test:
   requires:
-    pytest
-    pytest-cov
+    - pytest
+    - pytest-cov
+    - numpy
+    - numba
+    - opencv
 
   imports:
     - game_of_life_demo
 
 requirements:
-  build:
+  host:
     - python
     - setuptools
+    - numba
+    - opencv
 
   run:
     - python

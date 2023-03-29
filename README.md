@@ -36,8 +36,8 @@ Running demo
 From command line type:
 `python game_of_life.py  [command line options]`
 
-* `--variant [numba, numpy]`, default `numba` - implementation variant
-* `--threading-layer [omp, tbb, workqueue]`, default `omp` - threading layer for `numba` implementation
+* `--variant [numba, numpy]` (default `numpy`) - implementation variant
+* `--threading-layer [omp, tbb, workqueue]` (default `omp`) - threading layer for `numba` implementation
 * `--parallel` (default) or `--no-parallel` - keyword argument `parallel=` for `@njit`.
   Used along with `--variant numba`
 * `--frames-count` - stop rendering after a specified amount of frames. Default 0 meaning that the demo

@@ -38,8 +38,8 @@ parser.add_argument(
     "--variant",
     help="Implementation variant",
     type=str.casefold,
-    choices=["numba", "numpy"],
-    default="numba",
+    choices=["numpy", "numba"],
+    default="numpy",
 )
 parser.add_argument(
     "--threading-layer",
