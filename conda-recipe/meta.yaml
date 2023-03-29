@@ -3,18 +3,17 @@ package:
   version: {{ GIT_DESCRIBE_TAG }}
 
 source:
-  path: ./
+  path: ..
 
 build:
   number: {{ GIT_DESCRIBE_NUMBER }}
+  script_env:
+    - WHEELS_OUTPUT_FOLDER
 
 test:
   requires:
     - pytest
     - pytest-cov
-    - numpy
-    - numba
-    - opencv
 
   imports:
     - game_of_life_demo
@@ -23,6 +22,8 @@ requirements:
   host:
     - python
     - setuptools
+    - git
+    - wheel
     - numba
     - opencv
 
