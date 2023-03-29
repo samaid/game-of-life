@@ -1,0 +1,423 @@
+name: Conda package
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+env:
+  PACKAGE_NAME: game-of-life-demo
+  MODULE_NAME: game_of_life_demo
+  VER_SCRIPT1: "import json; f = open('ver.json', 'r'); j = json.load(f); f.close(); "
+  #VER_SCRIPT2: "d = j['dpctl'][0]; print('='.join((d[s] for s in ('version', 'build'))))"
+  #VER_SCRIPT1: ""
+  VER_SCRIPT2: ""
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set pkgs_dirs
+        run: |
+          echo "pkgs_dirs: [~/.conda/pkgs]" >> ~/.condarc
+      - name: Cache conda packages
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 3  # Increase to reset cache
+        with:
+          path: ~/.conda/pkgs
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-${{hashFiles('**/meta.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+      - name: Install conda-build
+        run: conda install conda-build
+      - name: Build conda package
+        run: |
+          CHANNELS="-c intel -c main --override-channels"
+          VERSIONS="--python ${{ matrix.python }}"
+          TEST="--no-test"
+          conda build \
+            $TEST \
+            $VERSIONS \
+            $CHANNELS \
+            conda-recipe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+          path: /usr/share/miniconda/conda-bld/linux-64/${{ env.PACKAGE_NAME }}-*.tar.bz2
+
+  build_windows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+    env:
+      conda-bld: C:\Miniconda\conda-bld\win-64\
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          use-only-tar-bz2: true
+          auto-activate-base: true
+          conda-build-version: "*"
+          activate-environment: true
+          python-version: ${{ matrix.python }}
+
+      - name: Cache conda packages
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 3  # Increase to reset cache
+        with:
+          path: /home/runner/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-${{hashFiles('**/meta.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Build conda package
+        run: conda build --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+          path: ${{ env.conda-bld }}${{ env.PACKAGE_NAME }}-*.tar.bz2
+
+  test_linux:
+    needs: build_linux
+    runs-on:  ${{ matrix.runner }}
+
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+        experimental: [false]
+        runner: [ubuntu-20.04]
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      CHANNELS: -c intel -c main --override-channels
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+      - name: Install conda-build
+        # Needed to be able to run conda index
+        run: conda install conda-build
+      - name: Create conda channel
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/channel/linux-64
+          conda index $GITHUB_WORKSPACE/channel || exit 1
+          mv ${PACKAGE_NAME}-*.tar.bz2 $GITHUB_WORKSPACE/channel/linux-64 || exit 1
+          conda index $GITHUB_WORKSPACE/channel || exit 1
+          # Test channel
+          conda search $PACKAGE_NAME -c $GITHUB_WORKSPACE/channel --override-channels --info --json > $GITHUB_WORKSPACE/ver.json
+          cat ver.json
+      - name: Collect dependencies
+        run: |
+          CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
+          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
+          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
+          cat lockfile
+      - name: Set pkgs_dirs
+        run: |
+          echo "pkgs_dirs: [~/.conda/pkgs]" >> ~/.condarc
+      - name: Cache conda packages
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 3  # Increase to reset cache
+        with:
+          path: ~/.conda/pkgs
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-${{hashFiles('lockfile') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Install package
+        run: |
+          export CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
+          export TEST_DEPENDENCIES="pytest pytest-cov cython"
+          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
+          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
+          # Test installed packages
+          conda list -n test-env
+      - name: Run tests
+        run: |
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
+          export OCL_ICD_FILENAMES=libintelocl.so
+          # clinfo -l
+          python -m pytest -p no:faulthandler --pyargs $MODULE_NAME
+
+  test_windows:
+    needs: build_windows
+    runs-on:  ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: cmd /C CALL {0}
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+        experimental: [false]
+        runner: [windows-latest]
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      workdir: '${{ github.workspace }}'
+      CHANNELS: -c intel -c main --override-channels
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          use-only-tar-bz2: true
+          auto-update-conda: true
+          conda-build-version: '*'
+          miniconda-version: 'latest'
+          activate-environment: test-env
+          python-version: ${{ matrix.python }}
+      - name: Create conda channel with the artifact bit
+        shell: cmd /C CALL {0}
+        run: |
+          echo ${{ env.workdir }}
+          mkdir ${{ env.workdir }}\channel\win-64
+          move ${{ env.PACKAGE_NAME }}-*.tar.bz2 ${{ env.workdir }}\channel\win-64
+          dir ${{ env.workdir }}\channel\win-64
+      - name: Index the channel
+        shell: cmd /C CALL {0}
+        run: conda index ${{ env.workdir }}\channel
+
+      - name: Dump package version info from created channel into ver.json
+        shell: cmd /C CALL {0}
+        run: |
+          conda search ${{ env.PACKAGE_NAME }} -c ${{ env.workdir }}/channel --override-channels --info --json > ${{ env.workdir }}\ver.json
+      - name: Output content of produced ver.json
+        shell: pwsh
+        run: Get-Content -Path ${{ env.workdir }}\ver.json
+      - name: Collect dependencies
+        shell: cmd /C CALL {0}
+        run: |
+          IF NOT EXIST ver.json (
+              copy /Y ${{ env.workdir }}\ver.json .
+          )
+          SET "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
+          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
+             SET PACKAGE_VERSION=%%F
+          )
+          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile
+      - name: Display lockfile content
+        shell: pwsh
+        run: Get-Content -Path .\lockfile
+      - name: Cache conda packages
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 1  # Increase to reset cache
+        with:
+          path: /home/runner/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-${{hashFiles('lockfile') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Install opencl_rt
+        shell: cmd /C CALL {0}
+        run: conda install -n test-env opencl_rt -c intel --override-channels
+      - name: Install game-of-life-demo
+        shell: cmd /C CALL {0}
+        run: |
+          @ECHO ON
+          IF NOT EXIST ver.json (
+              copy /Y ${{ env.workdir }}\ver.json .
+          )
+          set "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
+          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
+             SET PACKAGE_VERSION=%%F
+          )
+          SET "TEST_DEPENDENCIES=pytest pytest-cov cython"
+          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
+      - name: Report content of test environment
+        shell: cmd /C CALL {0}
+        run: |
+          echo "Value of CONDA enviroment variable was: " %CONDA%
+          echo "Value of CONDA_PREFIX enviroment variable was: " %CONDA_PREFIX%
+          conda info && conda list -n test-env
+      - name: Configure Intel OpenCL CPU RT
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos)) {
+              New-Item -Path HKLM:\SOFTWARE\Khronos
+          }
+          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos\OpenCL)) {
+              New-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL
+          }
+          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors)) {
+              New-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors
+          }
+          $conda_env_library = "$env:CONDA_PREFIX\Library"
+          New-ItemProperty -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors -Name $conda_env_library\lib\intelocl64.dll -Value 0
+          Write-Host $(Get-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors)
+          # Variable assisting OpenCL CPU driver to find TBB DLLs which are not located where it expects them by default
+          $cl_cfg="$conda_env_library\lib\cl.cfg"
+          Write-Output $cl_cfg
+          (Get-Content $cl_cfg) -replace '^CL_CONFIG_TBB_DLL_PATH =', "CL_CONFIG_TBB_DLL_PATH = $conda_env_library\bin" | Set-Content $cl_cfg
+          Get-Content -Tail 5 -Path $cl_cfg
+      - name: Run tests
+        shell: cmd /C CALL {0}
+        run: >-
+          conda activate test-env && python -m pytest -p no:faulthandler --pyargs ${{ env.MODULE_NAME }}
+
+  upload_linux:
+    needs: test_linux
+    if: ${{github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+
+      - name: Install anaconda-client
+        run: conda install anaconda-client
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+
+      - name: Upload
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          conda install anaconda-client
+          anaconda --token $ANACONDA_TOKEN upload --user pycoddiy --label dev ${PACKAGE_NAME}-*.tar.bz2
+
+  upload_windows:
+    needs: test_windows
+    if: ${{github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python: ['3.8', '3.9', '3.10']
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: ""
+      - name: Install anaconda-client
+        run: conda install anaconda-client
+
+      - name: Upload
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          conda install anaconda-client
+          anaconda --token ${{ env.ANACONDA_TOKEN }} upload --user pycoddiy --label dev ${{ env.PACKAGE_NAME }}-*.tar.bz2
+
+  test_examples_linux:
+    needs: build_linux
+    runs-on:  ${{ matrix.runner }}
+    strategy:
+      matrix:
+        python: ['3.9']
+        experimental: [false]
+        runner: [ubuntu-20.04]
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      CHANNELS: -c intel -c main --override-channels
+
+    steps:
+      - name: Install conda-build
+        # Needed to be able to run conda index
+        run: conda install conda-build python=${{ matrix.python }}
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+      - name: Create conda channel
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/channel/linux-64
+          conda index $GITHUB_WORKSPACE/channel || exit 1
+          mv ${PACKAGE_NAME}-*.tar.bz2 $GITHUB_WORKSPACE/channel/linux-64 || exit 1
+          conda index $GITHUB_WORKSPACE/channel || exit 1
+          # Test channel
+          conda search $PACKAGE_NAME -c $GITHUB_WORKSPACE/channel --override-channels --info --json > $GITHUB_WORKSPACE/ver.json
+          cat ver.json
+      - name: Collect dependencies
+        run: |
+          CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
+          conda install $PACKAGE_NAME python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
+      - name: Set pkgs_dirs
+        run: |
+          echo "pkgs_dirs: [~/.conda/pkgs]" >> ~/.condarc
+      - name: Cache conda packages
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 1  # Increase to reset cache
+        with:
+          path: ~/.conda/pkgs
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-${{hashFiles('lockfile') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Install example requirements
+        shell: bash -l {0}
+        run: |
+          CHANNELS="${{ env.CHANNELS }}"
+          . $CONDA/etc/profile.d/conda.sh
+          conda create -n examples -y pytest python=${{ matrix.python }} $CHANNELS
+          conda install -n examples -y cmake">=3.22" $CHANNELS || exit 1
+          conda install -n examples -y ninja $CHANNELS || exit 1
+          conda install -n examples -y pybind11 cython scikit-build $CHANNELS || exit 1
+          conda install -n examples -y mkl-dpcpp mkl-devel-dpcpp dpcpp_cpp_rt $CHANNELS || exit 1
+          conda create -y -n build_env -c intel gcc_linux-64 gxx_linux-64 dpcpp_linux-64
+      - name: Install game-of-life-demo
+        shell: bash -l {0}
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          CHANNELS="-c $GITHUB_WORKSPACE/channel -c dppy/label/dev -c intel -c main --override-channels"
+          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
+          conda install -n examples -y ${CHANNELS} game-of-life-demo=${PACKAGE_VERSION} || exit 1
+      - name: Run Python examples
+        shell: bash -l {0}
+        run: |
+          cd examples/python
+          source $CONDA/etc/profile.d/conda.sh
+          export OCL_ICD_FILENAMES=libintelocl.so
+          conda activate examples
+          for script in $(find . \( -not -name "_*" -and -name "*.py" \))
+          do
+            echo "Executing ${script}"
+            python ${script} || exit 1
+          done
