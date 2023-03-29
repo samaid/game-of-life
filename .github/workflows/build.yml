@@ -1,4 +1,4 @@
-name: Conda package
+name: Build conda and pip
 
 on:
   push:
