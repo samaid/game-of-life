@@ -307,7 +307,7 @@ jobs:
 
       - name: Upload
         env:
-          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
           conda install anaconda-client
           anaconda --token $ANACONDA_TOKEN upload --user pycoddiy --label dev ${PACKAGE_NAME}-*.tar.bz2
@@ -333,7 +333,7 @@ jobs:
 
       - name: Upload
         env:
-          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
           conda install anaconda-client
           anaconda --token ${{ env.ANACONDA_TOKEN }} upload --user pycoddiy --label dev ${{ env.PACKAGE_NAME }}-*.tar.bz2
