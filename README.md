@@ -50,4 +50,4 @@ From command line type:
 * `--gui` (default) or `--no-gui` - render the evolution of the grid or do the computation only and
   print performance statistics in the end.
 * `--stats` (default) or `--no-stats` - Display statistics in gui while running or not
-* `--task-size` - size of the grid WIDTH, HEIGHT. Example: 1200,800 (default)
+* `--task-size` - size of the grid WIDTH, HEIGHT. Example: `1200,800` (default)
