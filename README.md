@@ -1,4 +1,9 @@
 # Conway's Game Of Life
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage Status](https://coveralls.io/repos/github/samaid/game-of-life-demo/badge.svg?branch=main)](https://coveralls.io/github/samaid/game-of-life-demo?branch=main)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Join the chat at https://matrix.to/#/#Data-Parallel-Python_community:gitter.im](https://badges.gitter.im/Join%20Chat.svg)](https://app.gitter.im/#/room/#Data-Parallel-Python_community:gitter.im)
+
 
 The Game of Life is a cellular automaton devised by John Horton Conway in 1970.
 It is a zero-player game,[2][3] meaning that its evolution is determined by its initial state.
