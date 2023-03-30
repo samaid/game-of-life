@@ -1,5 +1,6 @@
 from game_of_life_demo import init
-from game_of_life_demo.game_of_life import init_grid, grid_update, RUN_VERSION
+from game_of_life_demo.game_of_life import RUN_VERSION, grid_update, init_grid
+
 
 def test_variant():
     print("RUNNING test_variant()")

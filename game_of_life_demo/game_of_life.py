@@ -1,12 +1,11 @@
-from init import parse_args, time_meter  # NOQA
+from init import PROB_ON, parse_args, time_meter  # NOQA
 
 if parse_args().gui:
     import cv2
 
+from init import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME
+
 RUN_VERSION = parse_args().variant
-
-
-from init import PROB_ON, RUN_VERSION, args, time_meter  # NOQA
 
 if RUN_VERSION == "Numba".casefold():
     import numpy as np
@@ -16,10 +15,7 @@ if RUN_VERSION == "Numba".casefold():
     config.THREADING_LAYER = parse_args().threading_layer
 elif RUN_VERSION == "NumPy".casefold():
     import numpy as np
-
     from impl_numpy import grid_update, init_grid
-
-from init import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME
 
 
 class Grid:
@@ -29,7 +25,7 @@ class Grid:
     update_last = "update_time_last"
     update_total = "update_time_total"
 
-    if args.gui:
+    if parse_args().gui:
         font = cv2.FONT_HERSHEY_TRIPLEX  # Select font
     font_scale = 0.5
     font_color = (255, 255, 255)  # BGR(A)
