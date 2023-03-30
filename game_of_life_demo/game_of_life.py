@@ -1,7 +1,10 @@
-from init import args, time_meter  # NOQA
+from init import parse_args, time_meter  # NOQA
 
-if args.gui:
+if parse_args().gui:
     import cv2
+
+RUN_VERSION = parse_args().variant
+
 
 from init import PROB_ON, RUN_VERSION, args, time_meter  # NOQA
 
@@ -10,7 +13,7 @@ if RUN_VERSION == "Numba".casefold():
     from impl_numba import grid_update, init_grid
     from numba import config
 
-    config.THREADING_LAYER = args.threading_layer
+    config.THREADING_LAYER = parse_args().threading_layer
 elif RUN_VERSION == "NumPy".casefold():
     import numpy as np
 
@@ -62,7 +65,7 @@ class Grid:
 
     def implemetation_string(self):
         if RUN_VERSION == "Numba".casefold():
-            return f"Numba, threading layer: {args.threading_layer}, parallel: {args.parallel}"
+            return f"Numba, threading layer: {parse_args().threading_layer}, parallel: {parse_args().parallel}"
         else:
             return "NumPy"
 
@@ -133,9 +136,9 @@ class Grid:
 def main():
     np.random.seed(0)
 
-    draw_result = args.gui
+    draw_result = parse_args().gui
 
-    GRID_W, GRID_H = args.task_size
+    GRID_W, GRID_H = parse_args().task_size
     grid = Grid(GRID_W, GRID_H, PROB_ON)
 
     if draw_result:
@@ -145,7 +148,7 @@ def main():
     frames = 0
     do_game = True
 
-    stop_frame = args.frames_count
+    stop_frame = parse_args().frames_count
     if stop_frame == 0 and not draw_result:
         stop_frame = 2000
 
@@ -155,7 +158,7 @@ def main():
     while do_game:
         if draw_result:
             # Draw objects
-            do_game = grid.draw(WINDOW_NAME, args.stats, frames)
+            do_game = grid.draw(WINDOW_NAME, parse_args().stats, frames)
 
         # Perform updates
         grid.update()
