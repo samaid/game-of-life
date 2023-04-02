@@ -1,21 +1,16 @@
-from init import PROB_ON, parse_args, time_meter  # NOQA
+from game_of_life_demo import time_meter, init_grid, grid_update, variant_str  # NOQA
+from game_of_life_demo import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME  # NOQA
+from game_of_life_demo import TEXT_BOX_TOP_LEFT, TEXT_BOX_BOTTOM_RIGHT  # NOQA
+from game_of_life_demo import PROB_ON  # NOQA
+from game_of_life_demo import parse_args  # NOQA
 
-if parse_args().gui:
+import numpy as np
+
+try:
     import cv2
-
-from init import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME
-
-RUN_VERSION = parse_args().variant
-
-if RUN_VERSION == "Numba".casefold():
-    import numpy as np
-    from impl_numba import grid_update, init_grid
-    from numba import config
-
-    config.THREADING_LAYER = parse_args().threading_layer
-elif RUN_VERSION == "NumPy".casefold():
-    import numpy as np
-    from impl_numpy import grid_update, init_grid
+    GUI_FLAG = True
+except ModuleNotFoundError:
+    GUI_FLAG = False
 
 
 class Grid:
@@ -24,14 +19,6 @@ class Grid:
 
     update_last = "update_time_last"
     update_total = "update_time_total"
-
-    if parse_args().gui:
-        font = cv2.FONT_HERSHEY_TRIPLEX  # Select font
-    font_scale = 0.5
-    font_color = (255, 255, 255)  # BGR(A)
-    font_height = 15
-    text_y_initial_pos = 25
-    text_x_initial_pos = 10
 
     def __init__(self, w, h, p):
         self.w = w
@@ -42,12 +29,23 @@ class Grid:
             self.update_last: 0,
             self.update_total: 0,
         }
+        if parse_args().gui:
+            self.font = cv2.FONT_HERSHEY_TRIPLEX
+            self.font_scale = 0.5
+            self.font_color = (255, 255, 255)  # BGR(A)
+            self.font_height = 15
+        else:
+            self.font = None
+            self.font_scale = None
+            self.font_color = None
+            self.font_height = None
+
         self.grid = init_grid(w, h, p)
 
     def y_pos_from_line(self, line):
-        return self.text_y_initial_pos + self.font_height * line
+        return TEXT_BOX_TOP_LEFT[1] + self.font_height * line
 
-    def putText(self, img, text, line, x_pos=text_x_initial_pos):
+    def putText(self, img, text, line, x_pos=10):
         y_pos = self.y_pos_from_line(line)
         cv2.putText(
             img, text, (x_pos, y_pos), self.font, self.font_scale, self.font_color, 2
@@ -59,11 +57,9 @@ class Grid:
         self.putText(img, "FPS|time(ms)", line, 150)
         self.putText(img, f"{fps:4.1f}|{int(1000*time)}", line, 300)
 
-    def implemetation_string(self):
-        if RUN_VERSION == "Numba".casefold():
-            return f"Numba, threading layer: {parse_args().threading_layer}, parallel: {parse_args().parallel}"
-        else:
-            return "NumPy"
+    @staticmethod
+    def variant_string():
+        return variant_str()
 
     def task_size_string(self):
         return f"Task size {self.w}x{self.h}"
@@ -88,14 +84,15 @@ class Grid:
             total_tpf,
         ) = self.get_statistics(frame_count)
 
-        p1 = (5, 7)
-        p2 = (420, 110)
-        sub_img = img[p1[1] : p2[1], p1[0] : p2[0]]
+        p1 = TEXT_BOX_TOP_LEFT
+        p2 = TEXT_BOX_BOTTOM_RIGHT
+
+        sub_img = img[p1[1]:p2[1], p1[0]:p2[0]]
         black_bg = np.zeros(sub_img.shape, dtype=np.uint8)
-        img[p1[1] : p2[1], p1[0] : p2[0]] = cv2.addWeighted(
+        img[p1[1]:p2[1], p1[0]:p2[0]] = cv2.addWeighted(
             sub_img, 0.5, black_bg, 0.5, 1.0
         )
-        self.putText(img, self.implemetation_string(), 0)
+        self.putText(img, self.variant_string(), 0)
         self.putText(img, self.task_size_string(), 1)
         self.putText(img, f"Frames: {(frame_count//10)*10}", 2)
         self.statistics_line(img, "Computation", 3, 1 / update_tpf, update_time)
@@ -129,30 +126,30 @@ class Grid:
         self.grid = grid_update(self.grid)
 
 
-def main():
-    np.random.seed(0)
+def main(argv=None):
+    np.random.seed(777777777)
 
-    draw_result = parse_args().gui
+    draw_result = parse_args(argv).gui
 
-    GRID_W, GRID_H = parse_args().task_size
-    grid = Grid(GRID_W, GRID_H, PROB_ON)
+    w, h = parse_args(argv).task_size
+    grid = Grid(w, h, PROB_ON)
 
-    if draw_result:
+    if draw_result and GUI_FLAG:
         cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_NORMAL | cv2.WINDOW_AUTOSIZE)
         cv2.resizeWindow(WINDOW_NAME, DISPLAY_W, DISPLAY_H)
 
     frames = 0
     do_game = True
 
-    stop_frame = parse_args().frames_count
+    stop_frame = parse_args(argv).frames_count
     if stop_frame == 0 and not draw_result:
         stop_frame = 2000
 
-    print(grid.implemetation_string())
+    print(grid.variant_string())
     print(grid.task_size_string())
 
     while do_game:
-        if draw_result:
+        if draw_result and GUI_FLAG:
             # Draw objects
             do_game = grid.draw(WINDOW_NAME, parse_args().stats, frames)
 
@@ -161,7 +158,7 @@ def main():
 
         frames += 1
 
-        if stop_frame > 0 and frames >= stop_frame:
+        if 0 < stop_frame <= frames:
             break
 
     _, update_tpf, _, draw_tpf, _, total_tpf = grid.get_statistics(frames)
