@@ -1,13 +1,21 @@
-from game_of_life_demo import time_meter, init_grid, grid_update, variant_str  # NOQA
-from game_of_life_demo import DISPLAY_H, DISPLAY_W, ESC_KEYCODE, WINDOW_NAME  # NOQA
-from game_of_life_demo import TEXT_BOX_TOP_LEFT, TEXT_BOX_BOTTOM_RIGHT  # NOQA
-from game_of_life_demo import PROB_ON  # NOQA
-from game_of_life_demo import parse_args  # NOQA
-
 import numpy as np
+
+from game_of_life_demo import DISPLAY_H
+from game_of_life_demo import DISPLAY_W
+from game_of_life_demo import ESC_KEYCODE
+from game_of_life_demo import PROB_ON
+from game_of_life_demo import TEXT_BOX_BOTTOM_RIGHT
+from game_of_life_demo import TEXT_BOX_TOP_LEFT
+from game_of_life_demo import WINDOW_NAME
+from game_of_life_demo import grid_update
+from game_of_life_demo import init_grid
+from game_of_life_demo import parse_args
+from game_of_life_demo import time_meter
+from game_of_life_demo import variant_str
 
 try:
     import cv2
+
     GUI_FLAG = True
 except ModuleNotFoundError:
     GUI_FLAG = False
@@ -87,9 +95,9 @@ class Grid:
         p1 = TEXT_BOX_TOP_LEFT
         p2 = TEXT_BOX_BOTTOM_RIGHT
 
-        sub_img = img[p1[1]:p2[1], p1[0]:p2[0]]
+        sub_img = img[p1[1] : p2[1], p1[0] : p2[0]]
         black_bg = np.zeros(sub_img.shape, dtype=np.uint8)
-        img[p1[1]:p2[1], p1[0]:p2[0]] = cv2.addWeighted(
+        img[p1[1] : p2[1], p1[0] : p2[0]] = cv2.addWeighted(
             sub_img, 0.5, black_bg, 0.5, 1.0
         )
         self.putText(img, self.variant_string(), 0)

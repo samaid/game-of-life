@@ -1,5 +1,7 @@
 import numpy as np
-from numba import njit, prange
+from numba import njit
+from numba import prange
+
 from game_of_life_demo import parse_args
 
 rules = np.array(
@@ -15,7 +17,9 @@ def init_grid(w, h, p):
     return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
 
 
-@njit(["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=parse_args().parallel)
+@njit(
+    ["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=parse_args().parallel
+)
 def grid_update(grid):
     m, n = grid.shape
     grid_out = np.empty_like(grid)
