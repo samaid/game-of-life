@@ -165,9 +165,9 @@ jobs:
           # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
-          python -m pytest --variant numpy
-          python -m pytest --variant numba --parallel
-          python -m pytest --variant numba --no-parallel
+          pytest --variant numpy
+          pytest --variant numba --parallel
+          pytest --variant numba --no-parallel
 
   test_windows:
     needs: build_windows
