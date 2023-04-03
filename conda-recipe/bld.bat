@@ -13,6 +13,6 @@ if NOT "%WHEELS_OUTPUT_FOLDER%"=="" (
     if errorlevel 1 exit 1
 ) else (
     rem Only install
-    "%PYTHON%" setup.py install %SKBUILD_ARGS%
+    "%PYTHON%" -m pip install .
     if errorlevel 1 exit 1
 )

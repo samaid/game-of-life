@@ -21,6 +21,7 @@ test:
     - game_of_life_demo
 
 requirements:
+  build:
   host:
     - python
     - setuptools

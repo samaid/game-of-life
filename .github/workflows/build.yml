@@ -92,7 +92,7 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
       - name: Build conda package
-        run: conda build --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
+        run: conda build --keep-old-work --dirty --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -165,9 +165,9 @@ jobs:
           # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
-          python -m pytest -p no:faulthandler --variant numpy
-          python -m pytest -p no:faulthandler --variant numba --parallel
-          python -m pytest -p no:faulthandler --variant numba --no-parallel
+          python -m pytest --variant numpy
+          python -m pytest --variant numba --parallel
+          python -m pytest --variant numba --no-parallel
 
   test_windows:
     needs: build_windows
@@ -286,13 +286,13 @@ jobs:
         shell: cmd /C CALL {0}
         run: >-
           conda activate test-env
-          python -m pytest -p no:faulthandler --variant numpy
-          python -m pytest -p no:faulthandler --variant numba --parallel
-          python -m pytest -p no:faulthandler --variant numba --no-parallel
+          python -m pytest --variant numpy
+          python -m pytest --variant numba --parallel
+          python -m pytest --variant numba --no-parallel
 
   upload_linux:
     needs: test_linux
-    if: ${{github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+    if: ${{github.ref == 'refs/heads/main' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -317,7 +317,7 @@ jobs:
 
   upload_windows:
     needs: test_windows
-    if: ${{github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+    if: ${{github.ref == 'refs/heads/main' || (startsWith(github.ref, 'refs/heads/release') == true) || github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
     runs-on: windows-latest
     strategy:
       matrix:

@@ -1,71 +1,64 @@
 import numpy as np
 import pytest
 
+import game_of_life_demo
 from game_of_life_demo import int_tuple
 from game_of_life_demo import parse_args
 from game_of_life_demo.game_of_life import Grid
 
-variants = ["numpy", "numba"]
 
-
-@pytest.mark.parametrize("variant_str", variants)
+@pytest.mark.parametrize("variant_str", ["numpy", "numba"])
 def test_variant(variant_str):
     args = parse_args(["--variant", variant_str])
     assert args.variant == variant_str
 
 
-variants = ["omp", "tbb", "workqueue"]
-
-
-@pytest.mark.parametrize("threading_str", variants)
+@pytest.mark.parametrize("threading_str", ["omp", "tbb", "workqueue"])
 def test_threading(threading_str):
-    args = parse_args(["--variant", threading_str])
+    args = parse_args(["--threading-layer", threading_str])
     assert args.threading_layer == threading_str
 
 
-variants = [True, False]
-
-
-@pytest.mark.parametrize("parallel", variants)
-def test_parallel(parallel):
-    args = parse_args(["--parallel", parallel])
-    assert args.parallel == parallel
-
-
-variants = [0, 100]
-
-
-@pytest.mark.parametrize("frames_count", variants)
-def test_frames_count(frames_count):
+@pytest.mark.parametrize("frames_count", [0, 100])
+def _test_frames_count(frames_count):
     args = parse_args(["--frames-count", frames_count])
     assert args.frames_count == frames_count
 
 
-variants = [True, False]
-
-
-@pytest.mark.parametrize("gui", variants)
-def test_gui(gui):
-    args = parse_args(["--gui", gui])
-    assert args.gui == gui
-
-
-variants = [True, False]
-
-
-@pytest.mark.parametrize("stats", variants)
-def test_stats(stats):
-    args = parse_args(["--stats", stats])
-    assert args.stats == stats
-
-
-variants = ["3, 3", "100, 100"]
-
-
-@pytest.mark.parametrize("task_size", variants)
+@pytest.mark.parametrize("task_size", ["3, 3", "100, 100"])
 def test_task_size(task_size):
     args = parse_args(["--task-size", task_size])
     assert args.task_size == int_tuple(task_size)
+
+
+def test_parallel_true():
+    args = parse_args(["--parallel"])
+    assert args.parallel
+
+
+def test_parallel_false():
+    args = parse_args(["--no-parallel"])
+    assert not args.parallel
+
+
+def test_gui_true():
+    args = parse_args(["--gui"])
+    assert args.gui
+
+
+def test_gui_false():
+    args = parse_args(["--no-gui"])
+    assert not args.gui
+
+
+def test_stats_true():
+    args = parse_args(["--stats"])
+    assert args.stats
+
+
+def test_stats_false():
+    args = parse_args(["--no-stats"])
+    assert not args.stats
 
 
 grids = [

@@ -14,6 +14,8 @@ PROB_ON = 0.2
 ESC_KEYCODE = 27
 WINDOW_NAME = "Conway's Game of life"
 
+MAX_FRAME = 2000
+
 
 def int_tuple(tuple_str):
     return tuple(map(int, tuple_str.split(",")))

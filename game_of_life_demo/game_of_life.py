@@ -3,6 +3,7 @@ import numpy as np
 from game_of_life_demo import DISPLAY_H
 from game_of_life_demo import DISPLAY_W
 from game_of_life_demo import ESC_KEYCODE
+from game_of_life_demo import MAX_FRAME
 from game_of_life_demo import PROB_ON
 from game_of_life_demo import TEXT_BOX_BOTTOM_RIGHT
 from game_of_life_demo import TEXT_BOX_TOP_LEFT
@@ -19,6 +20,9 @@ try:
     GUI_FLAG = True
 except ModuleNotFoundError:
     GUI_FLAG = False
+
+
+VISUALIZE_GAME = parse_args().gui and GUI_FLAG
 
 
 class Grid:
@@ -108,9 +112,9 @@ class Grid:
         self.statistics_line(img, "Total", 5, 1 / total_tpf, total_time)
 
     @time_meter(draw_last, draw_total)
-    def draw(self, window_name, show_statistics, frame_count):
+    def draw(self, show_statistics, frame_count):
         # check if window was closed
-        if not cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE):
+        if not cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE):
             return False
 
         img = np.zeros(shape=self.grid.shape + (3,), dtype=np.uint8)
@@ -120,7 +124,7 @@ class Grid:
         if show_statistics and frame_count > 0:
             self.draw_statistics(img, frame_count)
 
-        cv2.imshow(window_name, img)
+        cv2.imshow(WINDOW_NAME, img)
         cv2.resizeWindow(WINDOW_NAME, DISPLAY_W, DISPLAY_H)
 
         # Check if Escape button was pressed
@@ -134,32 +138,34 @@ class Grid:
         self.grid = grid_update(self.grid)
 
 
+def create_window():
+    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_NORMAL | cv2.WINDOW_AUTOSIZE)
+    cv2.resizeWindow(WINDOW_NAME, DISPLAY_W, DISPLAY_H)
+
+
 def main(argv=None):
     np.random.seed(777777777)
-
-    draw_result = parse_args(argv).gui
 
     w, h = parse_args(argv).task_size
     grid = Grid(w, h, PROB_ON)
 
-    if draw_result and GUI_FLAG:
-        cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_NORMAL | cv2.WINDOW_AUTOSIZE)
-        cv2.resizeWindow(WINDOW_NAME, DISPLAY_W, DISPLAY_H)
+    if VISUALIZE_GAME:
+        create_window()
 
     frames = 0
     do_game = True
 
     stop_frame = parse_args(argv).frames_count
-    if stop_frame == 0 and not draw_result:
-        stop_frame = 2000
+    if stop_frame == 0 and not VISUALIZE_GAME:
+        stop_frame = MAX_FRAME
 
     print(grid.variant_string())
     print(grid.task_size_string())
 
     while do_game:
-        if draw_result and GUI_FLAG:
-            # Draw objects
-            do_game = grid.draw(WINDOW_NAME, parse_args().stats, frames)
+        # Draw objects
+        if VISUALIZE_GAME:
+            do_game = grid.draw(parse_args().stats, frames)
 
         # Perform updates
         grid.update()
@@ -173,7 +179,7 @@ def main(argv=None):
     print(f"Total frames {frames}")
     print("Average fps:")
     print(f"    Computation {1/update_tpf:4.1f}")
-    if draw_result:
+    if VISUALIZE_GAME:
         print(f"    Draw        {1/draw_tpf:4.1f}")
         print(f"    Total       {1/total_tpf:4.1f}")
 
