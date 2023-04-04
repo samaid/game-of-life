@@ -165,7 +165,7 @@ jobs:
           # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
-          ls -lR | more
+          ls -lR
           pytest --variant numpy
       - name: Run tests (numba parallel)
         run: |
