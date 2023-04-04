@@ -1,7 +1,7 @@
 import argparse
 from time import time
 
-DISPLAY_RES = DISPLAY_W, DISPLAY_H = 800, 600
+DISPLAY_RES = DISPLAY_W, DISPLAY_H = 1200, 800
 CELL_COLOR = (0, 255, 0)
 CELL_SIZE = 1
 TEXT_BOX_TOP_LEFT = (5, 7)

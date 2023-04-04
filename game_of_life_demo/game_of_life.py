@@ -55,7 +55,7 @@ class Grid:
         self.grid = init_grid(w, h, p)
 
     def y_pos_from_line(self, line):
-        return TEXT_BOX_TOP_LEFT[1] + self.font_height * line
+        return TEXT_BOX_TOP_LEFT[1] + self.font_height * line + 10
 
     def putText(self, img, text, line, x_pos=10):
         y_pos = self.y_pos_from_line(line)
