@@ -166,6 +166,7 @@ jobs:
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
           ls
+          pwd
           pytest --variant numpy
       - name: Run tests (numba parallel)
         run: |

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from game_of_life_demo import Grid
+from game_of_life_demo.game_of_life import Grid
 from game_of_life_demo import int_tuple
 from game_of_life_demo import parse_args
 
