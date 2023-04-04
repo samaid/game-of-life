@@ -165,6 +165,7 @@ jobs:
           # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
+          ls
           pytest --variant numpy
       - name: Run tests (numba parallel)
         run: |
@@ -299,15 +300,15 @@ jobs:
       - name: Run tests (numpy)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ../tests --variant numpy
+          conda activate test-env && pytest --variant numpy
       - name: Run tests (numba no-parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ../tests --variant numba --no-parallel
+          conda activate test-env && pytest --variant numba --no-parallel
       - name: Run tests (numba parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ../tests --variant numba --parallel
+          conda activate test-env && pytest --variant numba --parallel
 
 
   upload_linux:
