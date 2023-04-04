@@ -158,16 +158,30 @@ jobs:
           conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
           # Test installed packages
           conda list -n test-env
-      - name: Run tests
+      - name: Run tests (numpy)
         run: |
           . $CONDA/etc/profile.d/conda.sh
           conda activate test-env
           # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
           export OCL_ICD_FILENAMES=libintelocl.so
           # clinfo -l
-          pytest ../tests --variant numpy
-          pytest ../tests --variant numba --parallel
-          pytest ../tests --variant numba --no-parallel
+          pytest --variant numpy
+      - name: Run tests (numba parallel)
+        run: |
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
+          export OCL_ICD_FILENAMES=libintelocl.so
+          # clinfo -l
+          pytest --variant numba --parallel
+      - name: Run tests (numba no-parallel)
+        run: |
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          # echo "libintelocl.so" | tee /etc/OpenCL/vendors/intel-cpu.icd
+          export OCL_ICD_FILENAMES=libintelocl.so
+          # clinfo -l
+          pytest --variant numba --no-parallel
 
   test_windows:
     needs: build_windows
