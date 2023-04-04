@@ -163,19 +163,19 @@ jobs:
           . $CONDA/etc/profile.d/conda.sh
           conda activate test-env
           export OCL_ICD_FILENAMES=libintelocl.so
-          pytest --pyargs game_of_life_demo --variant numpy
+          pytest --pyargs game-of-life-demo --variant numpy
       - name: Run tests (numba parallel)
         run: |
           . $CONDA/etc/profile.d/conda.sh
           conda activate test-env
           export OCL_ICD_FILENAMES=libintelocl.so
-          pytest --pyargs game_of_life_demo --variant numba --parallel
+          pytest --pyargs game-of-life-demo --variant numba --parallel
       - name: Run tests (numba no-parallel)
         run: |
           . $CONDA/etc/profile.d/conda.sh
           conda activate test-env
           export OCL_ICD_FILENAMES=libintelocl.so
-          pytest --pyargs game_of_life_demo --variant numba --no-parallel
+          pytest --pyargs game-of-life-demo --variant numba --no-parallel
 
   test_windows:
     needs: build_windows
@@ -293,15 +293,15 @@ jobs:
       - name: Run tests (numpy)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest --pyargs game_of_life_demo --variant numpy
+          conda activate test-env && pytest --pyargs game-of-life-demo --variant numpy
       - name: Run tests (numba no-parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest --pyargs game_of_life_demo --variant numba --no-parallel
+          conda activate test-env && pytest --pyargs game-of-life-demo --variant numba --no-parallel
       - name: Run tests (numba parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest --pyargs game_of_life_demo --variant numba --parallel
+          conda activate test-env && pytest --pyargs game-of-life-demo --variant numba --parallel
 
 
   upload_linux:
