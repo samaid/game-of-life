@@ -9,9 +9,9 @@ on:
 env:
   PACKAGE_NAME: game-of-life-demo
   MODULE_NAME: game_of_life_demo
-  VER_SCRIPT1: "import json; f = open('ver.json', 'r'); j = json.load(f); f.close(); "
+  #VER_SCRIPT1: "import json; f = open('ver.json', 'r'); j = json.load(f); f.close(); "
   #VER_SCRIPT2: "d = j['dpctl'][0]; print('='.join((d[s] for s in ('version', 'build'))))"
-  #VER_SCRIPT1: ""
+  VER_SCRIPT1: ""
   VER_SCRIPT2: ""
 
 jobs:
