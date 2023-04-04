@@ -52,5 +52,5 @@ def parse_args(argv=None):
         default=int_tuple(f"{w},{h}"),
     )
 
-    args = parser.parse_args(argv)
+    args, _ = parser.parse_known_args(argv)
     return args
