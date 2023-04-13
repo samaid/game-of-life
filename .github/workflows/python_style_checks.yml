@@ -21,7 +21,7 @@ jobs:
           python-version: '3.10'
       - uses: jamescurtin/isort-action@master
         with:
-          configuration: "--check-only"
+          configuration: "--check-only --profile black --filter-files -sl"
 
   black:
     # The type of runner that the job will run on
