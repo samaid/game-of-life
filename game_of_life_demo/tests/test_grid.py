@@ -1,4 +1,13 @@
-import numpy as np
+from game_of_life_demo.impl.impl_versioner import RUN_VERSION
+from game_of_life_demo.impl.impl_versioner import asnumpy
+
+if RUN_VERSION in ["dpnp", "numba-dpex"]:
+    import dpnp as np
+    import numpy.testing as testing
+else:
+    import numpy as np
+    import numpy.testing as testing
+
 import pytest
 
 from game_of_life_demo.game_of_life import Grid
@@ -59,4 +68,4 @@ def test_grid(mocker, input_grid, expected_grid):
     grid = Grid(3, 3, 1.0)
     grid.update()
 
-    np.testing.assert_array_equal(grid.grid, expected_grid)
+    testing.assert_array_equal(asnumpy(grid.grid), asnumpy(expected_grid))

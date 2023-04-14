@@ -1,4 +1,4 @@
-import numpy as np
+import dpnp as np
 
 rules = np.array(
     [
@@ -10,7 +10,8 @@ rules = np.array(
 
 
 def init_grid(w, h, p):
-    return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
+    u = np.random.random(w * h)
+    return np.where(u <= p, 1, 0).reshape(h, w)
 
 
 def grid_update(grid):
@@ -35,4 +36,4 @@ def grid_update(grid):
 
 
 def asnumpy(x):
-    return x
+    return np.asnumpy(x)

@@ -14,11 +14,14 @@ build:
 
 test:
   requires:
-    - pytest
+    - pytest =7.1.2
     - pytest-cov
-    - pytest-mock
-    - numpy
-    - numba
+    - pytest-mock =3.10.0
+    - numpy ~=1.23
+    - numba >=0.56.4
+    - dpnp
+    - dpctl
+    - numba-dpex
 
   imports:
     - game_of_life_demo
@@ -27,19 +30,25 @@ requirements:
   build:
   host:
     - python
-    - setuptools
+    - setuptools =65.6.3
     - git
-    - wheel
-    - numpy
-    - numba
-    - opencv
+    - wheel =0.38.4
+    - numpy ~=1.23
+    - numba >=0.56.4
+    - opencv =4.6.0
+    - dpnp
+    - dpctl
+    - numba-dpex
 
   run:
     - python
-    - pytest
-    - numpy >=1.23
+    - numpy ~=1.23
+    - scipy ~= 1.7
     - numba >=0.56.4
-    - opencv
+    - opencv =4.6.0
+    - dpnp
+    - dpctl
+    - numba-dpex
 
 about:
   home: https://github.com/samaid/game-of-life-demo

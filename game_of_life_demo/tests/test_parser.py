@@ -4,7 +4,7 @@ from game_of_life_demo import int_tuple
 from game_of_life_demo.impl.arg_parser import parse_args
 
 
-@pytest.mark.parametrize("variant_str", ["numpy", "numba"])
+@pytest.mark.parametrize("variant_str", ["numpy", "numba", "dpnp", "numba-dpex"])
 def test_variant(variant_str):
     args = parse_args(["--variant", variant_str])
     assert args.variant == variant_str

@@ -166,6 +166,12 @@ jobs:
           #echo $(dirname $(find . -name "conftest.py"))
           #pytest $(dirname $(find . -name "conftest.py"))  --variant numpy
           pytest ./game_of_life_demo/tests --variant numpy
+      - name: Run tests (dpnp)
+        run: |
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          export OCL_ICD_FILENAMES=libintelocl.so
+          pytest ./game_of_life_demo/tests --variant dpnp
       - name: Run tests (numba parallel)
         run: |
           . $CONDA/etc/profile.d/conda.sh
@@ -284,6 +290,10 @@ jobs:
         shell: cmd /C CALL {0}
         run: >-
           conda activate test-env && pytest ./game_of_life_demo/tests --variant numpy
+      - name: Run tests (dpnp)
+        shell: cmd /C CALL {0}
+        run: >-
+          conda activate test-env && pytest ./game_of_life_demo/tests --variant dpnp
       - name: Run tests (numba no-parallel)
         shell: cmd /C CALL {0}
         run: >-

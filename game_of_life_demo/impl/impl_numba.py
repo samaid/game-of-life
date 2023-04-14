@@ -39,3 +39,7 @@ def grid_update(grid):
             neighbor_population = grid_padded[i : i + 3, j : j + 3].sum() - v_self
             grid_out[i, j] = rules[v_self, neighbor_population]
     return grid_out
+
+
+def asnumpy(x):
+    return x
