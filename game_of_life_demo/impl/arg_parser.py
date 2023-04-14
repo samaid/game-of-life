@@ -21,7 +21,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--parallel",
         help="Keyword argument parallel= for @njit. Used along with --variant numba. Default --no-parallel",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         default=False,
     )
     parser.add_argument(
@@ -34,13 +34,13 @@ def parse_args(argv=None):
         "--gui",
         help="Render the evolution of the grid or do computation only and "
         "print statistics in the end. Default --no-gui",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         default=False,
     )
     parser.add_argument(
         "--stats",
         help="Either display statistics in gui while running or not. Default --no-stats",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         default=False,
     )
     w = 960
