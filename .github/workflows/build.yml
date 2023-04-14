@@ -3,16 +3,12 @@ name: Build conda and pip
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 env:
   PACKAGE_NAME: game-of-life-demo
   MODULE_NAME: game_of_life_demo
-  #VER_SCRIPT1: "import json; f = open('ver.json', 'r'); j = json.load(f); f.close(); "
-  #VER_SCRIPT2: "d = j['dpctl'][0]; print('='.join((d[s] for s in ('version', 'build'))))"
-  VER_SCRIPT1: ""
-  VER_SCRIPT2: ""
 
 jobs:
   build_linux:
@@ -46,7 +42,7 @@ jobs:
         run: conda install conda-build
       - name: Build conda package
         run: |
-          CHANNELS="-c intel -c main --override-channels"
+          CHANNELS="-c intel -c conda-forge --override-channels"
           VERSIONS="--python ${{ matrix.python }}"
           TEST="--no-test"
           conda build \
@@ -92,7 +88,7 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
       - name: Build conda package
-        run: conda build --keep-old-work --dirty --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
+        run: conda build --keep-old-work --dirty --no-test --python ${{ matrix.python }} -c intel -c conda-forge --override-channels conda-recipe
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -110,7 +106,7 @@ jobs:
         runner: [ubuntu-20.04]
     continue-on-error: ${{ matrix.experimental }}
     env:
-      CHANNELS: -c intel -c main --override-channels
+      CHANNELS: -c intel -c conda-forge --override-channels
 
     steps:
       - uses: actions/checkout@v3
@@ -137,8 +133,7 @@ jobs:
       - name: Collect dependencies
         run: |
           CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
-          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
-          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
+          conda create -n test-env $PACKAGE_NAME python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
           cat lockfile
       - name: Set pkgs_dirs
         run: |
@@ -157,8 +152,7 @@ jobs:
       - name: Install package
         run: |
           export CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
-          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
-          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
+          conda create -n test-env $PACKAGE_NAME ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
           # Test installed packages
           conda list -n test-env
       - name: Run tests (numpy)
@@ -197,7 +191,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     env:
       workdir: '${{ github.workspace }}'
-      CHANNELS: -c intel -c main --override-channels
+      CHANNELS: -c intel -c conda-forge --override-channels
 
     steps:
       - uses: actions/checkout@v3
@@ -236,14 +230,7 @@ jobs:
       - name: Collect dependencies
         shell: cmd /C CALL {0}
         run: |
-          IF NOT EXIST ver.json (
-              copy /Y ${{ env.workdir }}\ver.json .
-          )
-          SET "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
-          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
-             SET PACKAGE_VERSION=%%F
-          )
-          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile
+          conda install -n test-env ${{ env.PACKAGE_NAME }} python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile
       - name: Display lockfile content
         shell: pwsh
         run: Get-Content -Path .\lockfile
@@ -264,15 +251,7 @@ jobs:
       - name: Install game-of-life-demo
         shell: cmd /C CALL {0}
         run: |
-          @ECHO ON
-          IF NOT EXIST ver.json (
-              copy /Y ${{ env.workdir }}\ver.json .
-          )
-          set "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
-          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
-             SET PACKAGE_VERSION=%%F
-          )
-          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
+          conda install -n test-env ${{ env.PACKAGE_NAME }} %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
       - name: Report content of test environment
         shell: cmd /C CALL {0}
         run: |
