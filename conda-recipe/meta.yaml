@@ -6,6 +6,8 @@ source:
   path: ..
 
 build:
+  entry_points:
+    - game_of_life = game_of_life_demo.game_of_life:main
   number: {{ GIT_DESCRIBE_NUMBER }}
   script_env:
     - WHEELS_OUTPUT_FOLDER
