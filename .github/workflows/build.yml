@@ -283,15 +283,15 @@ jobs:
       - name: Run tests (numpy)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests --variant numpy
+          conda activate test-env && pytest ./game_of_life_demo/tests --variant numpy
       - name: Run tests (numba no-parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests  --variant numba --no-parallel
+          conda activate test-env && pytest ./game_of_life_demo/tests  --variant numba --no-parallel
       - name: Run tests (numba parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests  --variant numba --parallel
+          conda activate test-env && pytest ./game_of_life_demo/tests  --variant numba --parallel
 
 
   upload_linux:
@@ -316,7 +316,6 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
-          conda install anaconda-client
           anaconda --token $ANACONDA_TOKEN upload --user pycoddiy --label dev ${PACKAGE_NAME}-*.tar.bz2
 
   upload_windows:
@@ -342,5 +341,4 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
-          conda install anaconda-client
           anaconda --token ${{ env.ANACONDA_TOKEN }} upload --user pycoddiy --label dev ${{ env.PACKAGE_NAME }}-*.tar.bz2
