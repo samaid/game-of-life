@@ -166,7 +166,9 @@ jobs:
           . $CONDA/etc/profile.d/conda.sh
           conda activate test-env
           export OCL_ICD_FILENAMES=libintelocl.so
-          pytest ./game-of-life/game_of_life_demo/tests --variant numpy
+          tree .
+          echo $(dirname $(find . -name "conftest.py"))
+          pytest $(dirname $(find . -name "conftest.py"))  --variant numpy
       - name: Run tests (numba parallel)
         run: |
           . $CONDA/etc/profile.d/conda.sh
