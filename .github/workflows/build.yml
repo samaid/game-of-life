@@ -153,6 +153,7 @@ jobs:
         run: |
           export CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
           conda create -n test-env $PACKAGE_NAME ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
+          conda activate test-env
           pip install pytest-mock
           # Test installed packages
           conda list -n test-env
@@ -231,8 +232,7 @@ jobs:
       - name: Collect dependencies
         shell: cmd /C CALL {0}
         run: |
-          conda install -n test-env ${{ env.PACKAGE_NAME }} python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile
-          pip install pytest-mock
+          conda install -n test-env ${{ env.PACKAGE_NAME }} python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile && conda activate test-env && pip install pytest-mock
       - name: Display lockfile content
         shell: pwsh
         run: Get-Content -Path .\lockfile
