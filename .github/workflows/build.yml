@@ -3,16 +3,12 @@ name: Build conda and pip
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 env:
   PACKAGE_NAME: game-of-life-demo
   MODULE_NAME: game_of_life_demo
-  #VER_SCRIPT1: "import json; f = open('ver.json', 'r'); j = json.load(f); f.close(); "
-  #VER_SCRIPT2: "d = j['dpctl'][0]; print('='.join((d[s] for s in ('version', 'build'))))"
-  VER_SCRIPT1: ""
-  VER_SCRIPT2: ""
 
 jobs:
   build_linux:
@@ -32,7 +28,7 @@ jobs:
       - name: Cache conda packages
         uses: actions/cache@v3
         env:
-          CACHE_NUMBER: 3  # Increase to reset cache
+          CACHE_NUMBER: 4  # Increase to reset cache
         with:
           path: ~/.conda/pkgs
           key:
@@ -83,7 +79,7 @@ jobs:
       - name: Cache conda packages
         uses: actions/cache@v3
         env:
-          CACHE_NUMBER: 3  # Increase to reset cache
+          CACHE_NUMBER: 4  # Increase to reset cache
         with:
           path: /home/runner/conda_pkgs_dir
           key:
@@ -137,8 +133,7 @@ jobs:
       - name: Collect dependencies
         run: |
           CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
-          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
-          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
+          conda create -n test-env $PACKAGE_NAME python=${{ matrix.python }} $CHANNELS --only-deps --dry-run > lockfile
           cat lockfile
       - name: Set pkgs_dirs
         run: |
@@ -146,7 +141,7 @@ jobs:
       - name: Cache conda packages
         uses: actions/cache@v3
         env:
-          CACHE_NUMBER: 3  # Increase to reset cache
+          CACHE_NUMBER: 4  # Increase to reset cache
         with:
           path: ~/.conda/pkgs
           key:
@@ -157,8 +152,10 @@ jobs:
       - name: Install package
         run: |
           export CHANNELS="-c $GITHUB_WORKSPACE/channel ${{ env.CHANNELS }}"
-          export PACKAGE_VERSION=$(python -c "${VER_SCRIPT1} ${VER_SCRIPT2}")
-          conda create -n test-env $PACKAGE_NAME=${PACKAGE_VERSION} ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
+          conda create -n test-env $PACKAGE_NAME ${TEST_DEPENDENCIES} python=${{ matrix.python }} ${CHANNELS}
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          pip install pytest-mock
           # Test installed packages
           conda list -n test-env
       - name: Run tests (numpy)
@@ -170,6 +167,12 @@ jobs:
           #echo $(dirname $(find . -name "conftest.py"))
           #pytest $(dirname $(find . -name "conftest.py"))  --variant numpy
           pytest ./game_of_life_demo/tests --variant numpy
+      - name: Run tests (dpnp)
+        run: |
+          . $CONDA/etc/profile.d/conda.sh
+          conda activate test-env
+          export OCL_ICD_FILENAMES=libintelocl.so
+          pytest ./game_of_life_demo/tests --variant dpnp
       - name: Run tests (numba parallel)
         run: |
           . $CONDA/etc/profile.d/conda.sh
@@ -236,21 +239,14 @@ jobs:
       - name: Collect dependencies
         shell: cmd /C CALL {0}
         run: |
-          IF NOT EXIST ver.json (
-              copy /Y ${{ env.workdir }}\ver.json .
-          )
-          SET "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
-          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
-             SET PACKAGE_VERSION=%%F
-          )
-          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile
+          conda install -n test-env ${{ env.PACKAGE_NAME }} python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }} --only-deps --dry-run > lockfile && conda activate test-env && pip install pytest-mock
       - name: Display lockfile content
         shell: pwsh
         run: Get-Content -Path .\lockfile
       - name: Cache conda packages
         uses: actions/cache@v3
         env:
-          CACHE_NUMBER: 1  # Increase to reset cache
+          CACHE_NUMBER: 2  # Increase to reset cache
         with:
           path: /home/runner/conda_pkgs_dir
           key:
@@ -258,59 +254,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
-      - name: Install opencl_rt
-        shell: cmd /C CALL {0}
-        run: conda install -n test-env opencl_rt -c intel --override-channels
-      - name: Install game-of-life-demo
-        shell: cmd /C CALL {0}
-        run: |
-          @ECHO ON
-          IF NOT EXIST ver.json (
-              copy /Y ${{ env.workdir }}\ver.json .
-          )
-          set "SCRIPT=%VER_SCRIPT1% %VER_SCRIPT2%"
-          FOR /F "tokens=* USEBACKQ" %%F IN (`python -c "%SCRIPT%"`) DO (
-             SET PACKAGE_VERSION=%%F
-          )
-          conda install -n test-env ${{ env.PACKAGE_NAME }}=%PACKAGE_VERSION% %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
-      - name: Report content of test environment
-        shell: cmd /C CALL {0}
-        run: |
-          echo "Value of CONDA enviroment variable was: " %CONDA%
-          echo "Value of CONDA_PREFIX enviroment variable was: " %CONDA_PREFIX%
-          conda info && conda list -n test-env
-      - name: Configure Intel OpenCL CPU RT
-        shell: pwsh
-        run: |
-          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos)) {
-              New-Item -Path HKLM:\SOFTWARE\Khronos
-          }
-          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos\OpenCL)) {
-              New-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL
-          }
-          if (-not (Test-Path -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors)) {
-              New-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors
-          }
-          $conda_env_library = "$env:CONDA_PREFIX\Library"
-          New-ItemProperty -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors -Name $conda_env_library\lib\intelocl64.dll -Value 0
-          Write-Host $(Get-Item -Path HKLM:\SOFTWARE\Khronos\OpenCL\Vendors)
-          # Variable assisting OpenCL CPU driver to find TBB DLLs which are not located where it expects them by default
-          $cl_cfg="$conda_env_library\lib\cl.cfg"
-          Write-Output $cl_cfg
-          (Get-Content $cl_cfg) -replace '^CL_CONFIG_TBB_DLL_PATH =', "CL_CONFIG_TBB_DLL_PATH = $conda_env_library\bin" | Set-Content $cl_cfg
-          Get-Content -Tail 5 -Path $cl_cfg
       - name: Run tests (numpy)
+       0 shell: cmd /C CALL {0}
+        run: >-
+          conda activate test-env && pytest ./game_of_life_demo/tests --variant numpy
+      - name: Run tests (dpnp)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests --variant numpy
+          conda activate test-env && pytest ./game_of_life_demo/tests --variant dpnp
       - name: Run tests (numba no-parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests  --variant numba --no-parallel
+          conda activate test-env && pytest ./game_of_life_demo/tests  --variant numba --no-parallel
       - name: Run tests (numba parallel)
         shell: cmd /C CALL {0}
         run: >-
-          conda activate test-env && pytest ./game-of-life/game_of_life_demo/tests  --variant numba --parallel
+          conda activate test-env && pytest ./game_of_life_demo/tests  --variant numba --parallel
 
 
   upload_linux:
@@ -335,7 +294,6 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
-          conda install anaconda-client
           anaconda --token $ANACONDA_TOKEN upload --user pycoddiy --label dev ${PACKAGE_NAME}-*.tar.bz2
 
   upload_windows:
@@ -361,5 +319,4 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.PYCODDIYTOKEN }}
         run: |
-          conda install anaconda-client
           anaconda --token ${{ env.ANACONDA_TOKEN }} upload --user pycoddiy --label dev ${{ env.PACKAGE_NAME }}-*.tar.bz2

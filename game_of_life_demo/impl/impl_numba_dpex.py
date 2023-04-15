@@ -1,4 +1,8 @@
-import numpy as np
+import dpnp as np
+from numba_dpex import dpjit as njit
+from numba_dpex import prange
+
+from game_of_life_demo.impl.arg_parser import parse_args
 
 rules = np.array(
     [
@@ -10,9 +14,13 @@ rules = np.array(
 
 
 def init_grid(w, h, p):
-    return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
+    u = np.random.random(w * h)
+    return np.where(u <= p, 1, 0).reshape(h, w)
 
 
+@njit(
+    ["int32[:,:](int32[:,:])", "int64[:,:](int64[:,:])"], parallel=parse_args().parallel
+)
 def grid_update(grid):
     m, n = grid.shape
     grid_out = np.empty_like(grid)
@@ -26,7 +34,7 @@ def grid_update(grid):
     grid_padded[-1, -1] = grid[0, 0]
     grid_padded[0, -1] = grid[-1, 0]
     grid_padded[-1, 0] = grid[0, -1]
-    for i in range(m):
+    for i in prange(m):
         for j in range(n):
             v_self = grid[i, j]
             neighbor_population = grid_padded[i : i + 3, j : j + 3].sum() - v_self
@@ -35,4 +43,4 @@ def grid_update(grid):
 
 
 def asnumpy(x):
-    return x
+    return np.asnumpy(x)

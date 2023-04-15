@@ -9,7 +9,7 @@ def parse_args(argv=None):
         "--variant",
         help="Implementation variant",
         type=str.casefold,
-        choices=["numpy", "numba"],
+        choices=["numpy", "numba", "dpnp", "numba-dpex"],
         default="numpy",
     )
     parser.add_argument(

@@ -2,6 +2,7 @@ import numpy as np
 
 from game_of_life_demo import get_task_size_string
 from game_of_life_demo.impl.arg_parser import parse_args
+from game_of_life_demo.impl.impl_versioner import asnumpy
 from game_of_life_demo.impl.impl_versioner import get_variant_string
 
 DISPLAY_RES = DISPLAY_W, DISPLAY_H = 1920, 1080  # Window width and height
@@ -109,7 +110,9 @@ def draw(
     if VISUALIZE_GAME:
         h, w = grid.shape
         img = np.zeros(shape=grid.shape + (3,), dtype=np.uint8)
-        img[:, :, 1] = 255 * grid
+        img[:, :, 1] = 255 * asnumpy(
+            grid
+        )  # The asnumpy() transfers data from device to host as needed
         img = cv2.resize(img, (DISPLAY_W, DISPLAY_H), interpolation=cv2.INTER_NEAREST)
 
         if show_statistics and frame_count > 0:
