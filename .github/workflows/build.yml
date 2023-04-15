@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - main
-      - release*
   pull_request:
-    branches:
-      - main
-      - release*
 
 env:
   PACKAGE_NAME: game-of-life-demo
@@ -205,7 +201,6 @@ jobs:
     env:
       workdir: '${{ github.workspace }}'
       CHANNELS: -c intel -c main --override-channels
-
     steps:
       - uses: actions/checkout@v3
         with:
