@@ -14,7 +14,7 @@ rules = np.array(
 
 
 def init_grid(w, h, p):
-    u = np.random.random(w * h)
+    u = np.random.random(w * h)  # Working around the lack of random.choice()
     return np.where(u <= p, 1, 0).reshape(h, w)
 
 
