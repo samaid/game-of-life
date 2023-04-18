@@ -201,9 +201,9 @@ jobs:
     env:
       workdir: '${{ github.workspace }}'
       CHANNELS: -c intel -c main --override-channels
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout sources
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Download artifact
@@ -254,8 +254,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
+      - name: Install opencl_rt
+        shell: cmd /C CALL {0}
+        run: conda install -n test-env opencl_rt -c intel --override-channels
+      - name: Install dependencies
+        shell: cmd /C CALL {0}
+        run: |
+          SET "TEST_DEPENDENCIES=pytest pytest-cov"
+          conda install -n test-env ${{ env.PACKAGE_NAME }} %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
+      - name: Configure Intel OpenCL CPU RT
+        shell: pwsh
+        run: |
+          $script_path="$env:CONDA_PREFIX\Scripts\set-intel-ocl-icd-registry.ps1"
+          &$script_path
+          # Check the variable assisting OpenCL CPU driver to find TBB DLLs which are not located where it expects them by default
+          $cl_cfg="$env:CONDA_PREFIX\Library\lib\cl.cfg"
+          Get-Content -Tail 5 -Path $cl_cfg
       - name: Run tests (numpy)
-       0 shell: cmd /C CALL {0}
+        shell: cmd /C CALL {0}
         run: >-
           conda activate test-env && pytest ./game_of_life_demo/tests --variant numpy
       - name: Run tests (dpnp)
