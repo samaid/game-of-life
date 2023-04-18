@@ -262,6 +262,14 @@ jobs:
         run: |
           SET "TEST_DEPENDENCIES=pytest pytest-cov"
           conda install -n test-env ${{ env.PACKAGE_NAME }} %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
+      - name: Configure Intel OpenCL CPU RT
+        shell: pwsh
+        run: |
+          $script_path="$env:CONDA_PREFIX\Scripts\set-intel-ocl-icd-registry.ps1"
+          &$script_path
+          # Check the variable assisting OpenCL CPU driver to find TBB DLLs which are not located where it expects them by default
+          $cl_cfg="$env:CONDA_PREFIX\Library\lib\cl.cfg"
+          Get-Content -Tail 5 -Path $cl_cfg
       - name: Run tests (numpy)
         shell: cmd /C CALL {0}
         run: >-
