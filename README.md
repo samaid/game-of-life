@@ -35,6 +35,10 @@ The rules continue to be applied repeatedly to create further generations.
 
 For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
+Installation
+------------
+`conda install -c pycoddiy game-of-life-demo`
+
 Running demo
 ------------
 
