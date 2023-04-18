@@ -255,8 +255,8 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
       - name: Install dependencies
-      shell: cmd /C CALL {0}
-      run: |
+        shell: cmd /C CALL {0}
+        run: |
           SET "TEST_DEPENDENCIES=pytest pytest-cov"
           conda install -n test-env ${{ env.PACKAGE_NAME }} %TEST_DEPENDENCIES% python=${{ matrix.python }} -c ${{ env.workdir }}/channel ${{ env.CHANNELS }}
       - name: Run tests (numpy)
