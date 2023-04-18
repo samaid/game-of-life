@@ -37,7 +37,7 @@ For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Con
 
 Installation
 ------------
-`conda install -c pycoddiy game-of-life-demo`
+conda install -c "pycoddiy/label/dev" game-of-life-demo
 
 Running demo
 ------------
