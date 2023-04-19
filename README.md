@@ -39,6 +39,11 @@ Installation
 ------------
 `conda install -c "pycoddiy/label/dev" game-of-life-demo`
 
+Also, if you are using GUI, you will need to add 
+`opencv-python` to the environment:
+
+`pip install opencv-python`
+
 Running demo
 ------------
 
