@@ -1,7 +1,7 @@
 # Conway's Game Of Life
 
 The Game of Life is a cellular automaton devised by John Horton Conway in 1970.
-It is a zero-player game,[2][3] meaning that its evolution is determined by its initial state.
+It is a zero-player game, meaning that its evolution is determined by its initial state.
 One interacts with the Game of Life by creating an initial configuration and observing how it evolves.
 
 ![Game Of Life Demo](https://github.com/samaid/GameOfLife/blob/main/images/game-of-life-lowres.gif)
@@ -30,13 +30,17 @@ The rules continue to be applied repeatedly to create further generations.
 
 For further details please address [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
 
+Installation
+------------
+`conda install -c pycoddiy/label/dev game-of-life-demo`
+
 Running demo
 ------------
 
 From command line type:
-`python game_of_life.py  [command line options]`
+`game_of_life  [command line options]`
 
-* `--variant [numba, numpy]` (default `numpy`) - implementation variant
+* `--variant [numba, numpy, dpnp, numba-dpex]` (default `numpy`) - implementation variant
 * `--threading-layer [omp, tbb, workqueue]` (default `omp`) - threading layer for `numba` implementation
 * `--parallel` (default) or `--no-parallel` - keyword argument `parallel=` for `@njit`.
   Used along with `--variant numba`
