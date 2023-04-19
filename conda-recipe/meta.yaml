@@ -53,4 +53,24 @@ requirements:
 
 about:
   home: https://github.com/samaid/game-of-life-demo
+  summary: Conway's Game-Of-Life demo with `numpy`, `numba`, `dpnp`, `numba-dpex`.
+  description: |
+    The Game of Life is a cellular automaton devised by John Horton Conway in 1970.
+    This demo provides multiple implementations using different libraries/tools for CPU and GPU.
+    - `numpy` - pure NumPy implementation that runs on CPU only\n
+    - `numba` - Numba implementation that runs on CPU only\n
+    - `dpnp` - adapted `numpy` implementation that can run on both CPU and GPU\n
+    - `numba-dpex` - adapted `numba` implementation that can run on both CPU and GPU\n
+    In order to run demo - game_of_life [command line options]n\
+    - `--variant [numba, numpy]` (default `numpy`) - implementation variant\n
+    - `--threading-layer [omp, tbb, workqueue]` (default `omp`) - threading layer for `numba` implementation\n
+    - `--parallel` (default) or `--no-parallel` - keyword argument `parallel=` for `@njit`.
+      Used along with `--variant numba`\n
+    - `--frames-count` - stop rendering after a specified amount of frames. Default 0 meaning that the demo
+      does not stop until user action, e.g. close window\n
+    - `--gui` (default) or `--no-gui` - render the evolution of the grid or do the computation only and
+      print performance statistics in the end.\n
+    - `--stats` (default) or `--no-stats` - Display statistics in gui while running or not\n
+    - `--task-size` - size of the grid WIDTH, HEIGHT. Example: `960,540` (default)\n
   license: BSD-2
+  license_file: LICENSE
