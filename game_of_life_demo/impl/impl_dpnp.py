@@ -1,5 +1,6 @@
 import dpnp as np
 
+
 def init_grid(w, h, p):
     u = np.random.random(w * h)  # Working around the lack of random.choice
     return np.where(u <= p, 1, 0).reshape(h, w)
@@ -30,7 +31,10 @@ def grid_update(grid):
     grid_neighbor[-2, 1] += grid_neighbor[0, -1]
 
     dead_rules = np.logical_and(grid == 0, grid_neighbor[1:-1, 1:-1] == 3)
-    alive_rules = np.logical_and(grid == 1, np.logical_or(grid_neighbor[1:-1, 1:-1] == 2, grid_neighbor[1:-1, 1:-1] == 3))
+    alive_rules = np.logical_and(
+        grid == 1,
+        np.logical_or(grid_neighbor[1:-1, 1:-1] == 2, grid_neighbor[1:-1, 1:-1] == 3),
+    )
 
     grid_out = np.logical_or(alive_rules, dead_rules)
 

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def init_grid(w, h, p):
     return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
 
@@ -29,7 +30,10 @@ def grid_update(grid):
     grid_neighbor[-2, 1] += grid_neighbor[0, -1]
 
     dead_rules = np.logical_and(grid == 0, grid_neighbor[1:-1, 1:-1] == 3)
-    alive_rules = np.logical_and(grid == 1, np.logical_or(grid_neighbor[1:-1, 1:-1] == 2, grid_neighbor[1:-1, 1:-1] == 3))
+    alive_rules = np.logical_and(
+        grid == 1,
+        np.logical_or(grid_neighbor[1:-1, 1:-1] == 2, grid_neighbor[1:-1, 1:-1] == 3),
+    )
 
     grid_out = np.logical_or(alive_rules, dead_rules)
 
