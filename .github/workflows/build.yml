@@ -42,7 +42,7 @@ jobs:
         run: conda install conda-build
       - name: Build conda package
         run: |
-          CHANNELS="-c intel -c main --override-channels"
+          CHANNELS="-c dppy/label/dev -c intel -c conda-forge --override-channels"
           VERSIONS="--python ${{ matrix.python }}"
           TEST="--no-test"
           conda build \
@@ -70,7 +70,7 @@ jobs:
           fetch-depth: 0
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          use-only-tar-bz2: true
+          use-only-tar-bz2: false
           auto-activate-base: true
           conda-build-version: "*"
           activate-environment: true
@@ -88,7 +88,7 @@ jobs:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-python-${{ matrix.python }}-
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-
       - name: Build conda package
-        run: conda build --keep-old-work --dirty --no-test --python ${{ matrix.python }} -c intel -c main --override-channels conda-recipe
+        run: conda build --keep-old-work --dirty --no-test --python ${{ matrix.python }} -c dppy/label/dev -c intel -c conda-forge --override-channels conda-recipe
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -106,7 +106,7 @@ jobs:
         runner: [ubuntu-20.04]
     continue-on-error: ${{ matrix.experimental }}
     env:
-      CHANNELS: -c intel -c main --override-channels
+      CHANNELS: -c dppy/label/dev -c intel -c conda-forge --override-channels
 
     steps:
       - uses: actions/checkout@v3
@@ -200,7 +200,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     env:
       workdir: '${{ github.workspace }}'
-      CHANNELS: -c intel -c main --override-channels
+      CHANNELS: -c dppy/label/dev -c intel -c conda-forge --override-channels
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -212,7 +212,7 @@ jobs:
           name: ${{ env.PACKAGE_NAME }} ${{ runner.os }} Python ${{ matrix.python }}
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          use-only-tar-bz2: true
+          use-only-tar-bz2: false
           auto-update-conda: true
           conda-build-version: '*'
           miniconda-version: 'latest'
