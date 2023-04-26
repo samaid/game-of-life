@@ -11,7 +11,7 @@ if RUN_VERSION == "Numba".casefold():
 
     config.THREADING_LAYER = parse_args().threading_layer
 elif RUN_VERSION == "NumPy".casefold():
-    from game_of_life_demo.impl.impl_numba import asnumpy
+    from game_of_life_demo.impl.impl_numpy import asnumpy
     from game_of_life_demo.impl.impl_numpy import grid_update
     from game_of_life_demo.impl.impl_numpy import init_grid
 elif RUN_VERSION == "DPNP".casefold():
