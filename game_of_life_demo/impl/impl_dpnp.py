@@ -20,10 +20,10 @@ def grid_update(grid):
     grid_neighbor[1:-1, 2:] += grid
     grid_neighbor[2:, 2:] += grid
 
-    grid_neighbor[1, 1:-2] += grid_neighbor[-1, 1:-2]
-    grid_neighbor[-2, 1:-2] += grid_neighbor[0, 1:-2]
-    grid_neighbor[1:-2, 1] += grid_neighbor[1:-2, -1]
-    grid_neighbor[1:-2, -2] += grid_neighbor[1:-2, 0]
+    grid_neighbor[1, 1:-1] += grid_neighbor[-1, 1:-1]
+    grid_neighbor[-2, 1:-1] += grid_neighbor[0, 1:-1]
+    grid_neighbor[1:-1, 1] += grid_neighbor[1:-1, -1]
+    grid_neighbor[1:-1, -2] += grid_neighbor[1:-1, 0]
 
     grid_neighbor[1, 1] += grid_neighbor[-1, -1]
     grid_neighbor[-2, -2] += grid_neighbor[0, 0]
