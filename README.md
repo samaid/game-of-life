@@ -54,7 +54,7 @@ From command line type:
   Used along with `--variant numba`
 * `--frames-count` - stop rendering after a specified amount of frames. Default 0 meaning that the demo
   does not stop until user action, e.g. close window
-* `--gui` (default) or `--no-gui` - render the evolution of the grid or do the computation only and
+* `--gui` - render the evolution of the grid or do the computation only and
   print performance statistics in the end.
-* `--stats` (default) or `--no-stats` - Display statistics in gui while running or not
+* `--stats` - Display statistics in gui while running
 * `--task-size` - size of the grid WIDTH, HEIGHT. Example: `960,540` (default)

@@ -13,8 +13,33 @@ rules = np.array(
 )
 
 
-def init_grid(w, h, p):
-    u = np.random.random(w * h)  # Working around the lack of random.choice()
+def default_dpt_device():
+    import dpctl
+
+    default_device = dpctl.SyclDevice()
+    if default_device.is_gpu:
+        return "gpu"
+    else:
+        return "cpu"
+
+
+def implementation_device(parse_args):
+    if parse_args.gpu:
+        return "gpu"
+    elif parse_args.cpu:
+        return "gpu"
+
+    return default_dpt_device()
+
+
+def impl_string(parse_args):
+    return f"Numba-dpex, device: {implementation_device(parse_args())}"
+
+
+def init_grid(w, h, p, args):
+    u = np.random.random(
+        w * h, device=implementation_device(args)
+    )  # Working around the lack of random.choice
     return np.where(u <= p, 1, 0).reshape(h, w)
 
 
