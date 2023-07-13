@@ -22,7 +22,7 @@ class Grid:
     update_last = "update_time_last"
     update_total = "update_time_total"
 
-    def __init__(self, w, h, p):
+    def __init__(self, w, h, p, args):
         self.w = w
         self.h = h
         self.time = {
@@ -31,7 +31,7 @@ class Grid:
             self.update_last: 0,
             self.update_total: 0,
         }
-        self.grid = init_grid(w, h, p)
+        self.grid = init_grid(w, h, p, args)
 
     def get_statistics(self, frame_count):
         update_time = self.time[self.update_last]
@@ -70,12 +70,35 @@ class Grid:
     def update(self):
         self.grid = grid_update(self.grid)
 
+    def warmup(self):
+        grid_update(self.grid)
+
+
+def validate_args(args):
+    if args.gpu and args.cpu:
+        print("ERROR: '--cpu' and '--gpu' options can't be specified at the same time")
+        quit()
+
+    if args.gpu and args.variant.casefold() not in ["dpnp", "numba-dpex"]:
+        print(
+            f"WARNING: '--gpu' option is specified but variant is {args.variant}."
+            " '--gpu' option is valid only for dpnp and numba-dpex variants."
+        )
+
+    if args.parallel and args.variant.casefold() != "numba":
+        print(
+            f"WARNING: '--parallel' option is specified but variant is {args.variant}."
+            " '--parallel' option is valid only for numba variant."
+        )
+
 
 def main(argv=None):
     np.random.seed(777777777)
 
+    validate_args(parse_args(argv))
+
     w, h = parse_args(argv).task_size
-    grid = Grid(w, h, PROB_ON)
+    grid = Grid(w, h, PROB_ON, parse_args(argv))
 
     create_window()
 
@@ -83,13 +106,16 @@ def main(argv=None):
     do_game = True
 
     stop_frame = parse_args(argv).frames_count
-    if stop_frame == 0 and not VISUALIZE_GAME:
-        stop_frame = MAX_FRAMES
-    else:
-        stop_frame = 1000000000
+    if stop_frame == 0:
+        if not VISUALIZE_GAME:
+            stop_frame = MAX_FRAMES
+        else:
+            stop_frame = 1000000000
 
     print(get_variant_string())
     print(get_task_size_string(w, h))
+
+    grid.warmup()
 
     while do_game:
         # Checks for game termination

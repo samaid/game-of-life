@@ -1,7 +1,11 @@
 import numpy as np
 
 
-def init_grid(w, h, p):
+def impl_string(parse_args):
+    return f"NumPy, device: cpu"
+
+
+def init_grid(w, h, p, args):
     return np.random.choice((0, 1), w * h, p=(1.0 - p, p)).reshape(h, w)
 
 
